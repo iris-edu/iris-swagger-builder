@@ -183,20 +183,29 @@ var Builder = (function($) {
       var $label = $('<label>').append(
         $radio, option[0]
       );
-      var $subdiv = $('<div>').append(
+      var $subdiv = $('<div class="hide-if-inactive">').append(
         this.renderItems(builder, option.slice(1))
       );
-      $div.append($label, $subdiv);
+      $div.append($("<div>").append($label), $subdiv);
+      (function(_radio, _subdiv) {
+          builder.addBuilderAction(function() {
+              _subdiv.builder('dependsOn', _radio);
+              $("input", _subdiv).builder('dependsOn', _subdiv);
+          });
+      })($radio, $subdiv);
     }
     return $div;
   };
 
 
   var DEFAULTS = {
-    swaggerURL: 'swagger-rkgravitymag.json',
-    path: '/query',
-    labelClass: 'col-xs-2',
-    fieldClass: 'col-xs-10',
+      /* URL to retrieve Swagger definition from */
+      swaggerURL: 'swagger-rkgravitymag.json',
+      /* Swagger path to generate a builder for */
+      path: '/query',
+      /* Bootstrap form classes */
+      labelClass: 'col-xs-2',
+      fieldClass: 'col-xs-10',
   };
 
   function Builder(options) {
@@ -216,6 +225,7 @@ var Builder = (function($) {
     if (options) {
       $.extend(true, self.options, options);
     }
+    self.builderActions = [];
   };
 
   Builder.prototype.run = function() {
@@ -236,7 +246,12 @@ var Builder = (function($) {
       function(jqXHR, status, error) {
         return error || status;
       }
-    ).then(
+    ).then(function() {
+      $("form#builder-form").builder(self.options);
+      for (var _i=0, _len=self.builderActions.length; _i<_len; _i++) {
+          self.builderActions[_i]();
+      }
+    }).then(
       self._done.resolve,
       self._done.reject,
       self._done.notify
@@ -292,7 +307,7 @@ var Builder = (function($) {
     this.$operationSummary.html(this.operation.summary);
     this.$operationDescription.html(this.operation.description);
     this.$form.prop('action', "http://" + this.service.host + this.service.basePath + this.service.path);
-    this.$usage.append(this.renderUsage());
+        this.$usage.append(this.renderUsage());
     var items = this.options.layout;
     if (!items) {
       items = this.parameter_names;
@@ -320,6 +335,10 @@ var Builder = (function($) {
       return value;
     }
     return param_builder.enum_labels[value] || value;
+  };
+
+  Builder.prototype.addBuilderAction = function(action) {
+      this.builderActions.push(action);
   };
 
   return {

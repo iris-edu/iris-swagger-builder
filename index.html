@@ -183,7 +183,6 @@
           }
         }
       },
-      /*
       layout: [
         new Builder.Columns(
           [
@@ -193,9 +192,11 @@
           [
             new Builder.Fieldset("Location",
               new Builder.OptGroup(
-                'location_type',
+                '_location_type',
                 ['All'],
-                ['Lat/Lon Box', "maxlat", "maxlon", "minlat", "minlon" ],
+                ['Lat/Lon Box',
+                    new Builder.Columns(["minlat"], ["maxlat"]),
+                    new Builder.Columns(["minlon"], ["maxlon"])],
                 ['Lat/Lon Radius', "lat", "lon", "minradius", "maxradius" ]
               )
             )
@@ -203,14 +204,9 @@
         ),
         "format"
       ]
-    */
     });
     swaggerBuilder.run().then(function() {
-      // Init builder
-      $("#builder-form").builder({
-          targetSelector: "#output"
-      });
-      $("#minmag-row").builder('dependsOn', $('#maxmag'));
+        // Builder functions
     });
   });
 

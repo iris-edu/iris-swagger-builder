@@ -43,7 +43,3 @@ a.hardhat {
 div#webservicedoc-summary {
   margin-top:1.0em;
 }
-
-/* FORM BUILDER CUSTOMIZATIONS */
-.inactive { color: #ccc; }
-.inactive.hide-if-inactive, input:disabled.hide-if-inactive { display: none; }

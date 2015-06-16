@@ -35,3 +35,6 @@ a.validate-bs-validator-blur:hover {
 div.with-errors > ul, div.with-errors > ol {
    margin:0px;
 }
+
+.inactive { color: #ccc; }
+.inactive.hide-if-inactive, input:disabled.hide-if-inactive { display: none; }
