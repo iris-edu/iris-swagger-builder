@@ -30,6 +30,20 @@
         "produces": [
           "text/plain"
         ],
+        "x-layout": [
+          {
+            "title": "Lat/Lon Box",
+            "fields": [
+              "minlat", "maxlat", "minlon", "maxlon"
+            ]
+          },
+          {
+            "title": "Lat/Lon Radius",
+            "fields": [
+              "lat", "lon", "minradius", "maxradius"
+            ]
+          }
+        ],
         "parameters": [
           {
             "name": "starttime",

@@ -4,7 +4,7 @@
 var Builder = (function($) {
 
   var DEFAULTS = {
-    swaggerURL: '/swagger-rkgravitymag.json',
+    swaggerURL: 'swagger-rkgravitymag.json',
     labelClass: 'col-xs-4',
     fieldClass: 'col-xs-8',
     path: '/query'
@@ -64,9 +64,13 @@ var Builder = (function($) {
 
   Builder.prototype.parseSwaggerOperation = function(operationData) {
     var parameters = operationData.parameters;
+    var parameter_map = {};
     for (var i = 0, len = parameters.length; i < len; i++) {
-      parameters[i] = this.parseSwaggerParameter(parameters[i]);
+      var param = this.parseSwaggerParameter(parameters[i]);
+      parameters[i] = param;
+      parameter_map[param.name] = param
     }
+    operationData.parameter_map = parameter_map;
     return operationData;
   };
 
@@ -91,11 +95,32 @@ var Builder = (function($) {
     this.$operationDescription.html(definition.operation.description);
     this.$form.prop('action', "http://" + definition.host + definition.basePath + definition.path);
     var parameters = definition.operation.parameters;
-    for (var i = 0, len = parameters.length; i < len; i++) {
-      var parameter = parameters[i];
-      if (parameter.in === 'query') {
-        this.renderField(parameter);
-        this.renderUsage(parameter);
+    var rendered_parameters = {};
+    var layout = definition.operation['x-layout'];
+    if (layout) {
+      for (var _i = 0, _len = layout.length; _i < _len; _i++ ) {
+        var layout_group = layout[_i];
+        var $fieldset = $("<fieldset>");
+        if (layout_group.title) {
+          $fieldset.append($("<legend>").html(layout_group.title));
+        }
+        var layout_fields = layout_group.fields;
+        for (var _ii = 0, _llen = layout_fields.length; _ii < _llen; _ii++) {
+          var field = definition.operation.parameter_map[layout_fields[_ii]];
+          if (field) {
+            $fieldset.append(this.renderField(field));
+            this.$usage.append(this.renderUsage(field));
+            rendered_parameters[field.name] = 1;
+          }
+        }
+        this.$form.append($fieldset);
+      }
+    }
+    for (var _i = 0, _len = parameters.length; _i < _len; _i++) {
+      var parameter = parameters[_i];
+      if (parameter.in === 'query' && !rendered_parameters[parameter.name]) {
+        this.$form.append(this.renderField(parameter));
+        this.$usage.append(this.renderUsage(parameter));
       }
     }
   };
@@ -121,7 +146,7 @@ var Builder = (function($) {
         $('<div>').addClass(this.options.fieldClass)
           .append($input)
           .append($('<div>').addClass('help-block').html(parameter.description)));
-    this.$form.append($row);
+    return $row;
   };
 
   Builder.prototype.renderInput = function(parameter) {
