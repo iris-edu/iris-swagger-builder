@@ -43,6 +43,11 @@ if (typeof(DEBUG) === 'undefined') {
         defaults: {
             /** selector (typically by id) of the url link */
             urlLinkSelector: "#url",
+            /**
+             * Selector for a target DOM element.  If this is given, then rather than opening links
+             * in a new window/tab, the URL will be opened via AJAX and pasted into the target.
+             */
+            targetSelector: null,
             /** selector to get all inputs */
             inputSelector: "input, select, textarea",
             /**
@@ -234,6 +239,20 @@ if (typeof(DEBUG) === 'undefined') {
          */
         _initUrlLink: function() {
             this.$urlLink = $(this.options.urlLinkSelector);
+            // If there's a target for the output, override the click() behavior to retrieve via
+            // AJAX and render the output to the target
+            if (this.options.targetSelector) {
+                var $target = $(this.options.targetSelector);
+                this.$urlLink.click(function() {
+                    $.ajax({
+                        url: $(this).prop('href'),
+                        dataType: 'text'
+                    }).done(function(content) {
+                        $target.text(content);
+                    });
+                    return false;
+                });
+            }
         },
 
         /**

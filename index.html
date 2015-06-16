@@ -121,6 +121,8 @@
     <p><a id="url" target="_blank"></a></p>
   </div>
 
+  <div id="output"></div>
+
   <div id="dialog"
        class="modal fade"
        tabindex="-1"
@@ -205,7 +207,9 @@
     });
     swaggerBuilder.run().then(function() {
       // Init builder
-      $("#builder-form").builder();
+      $("#builder-form").builder({
+          targetSelector: "#output"
+      });
       $("#minmag-row").builder('dependsOn', $('#maxmag'));
     });
   });
