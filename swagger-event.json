@@ -57,12 +57,57 @@
             "minimum": 0
           },
           {
+            "name": "maxmag",
+            "in": "query",
+            "description": "Maximum magnitude",
+            "required": false,
+            "type": "number",
+            "maximum": 10,
+            "minimum": 0
+          },
+          {
             "name": "magtype",
             "in": "query",
             "description": "Some common magnitude types are listed, other types may be specified by modifying the URL.",
             "required": false,
             "type": "string",
             "enum": ["MB", "ML", "MS", "MW"]
+          },
+          {
+            "name": "minlon",
+            "in": "query",
+            "description": "western limit",
+            "required": false,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0
+          },
+          {
+            "name": "maxlon",
+            "in": "query",
+            "description": "eastern limit",
+            "required": false,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0
+          },
+          {
+            "name": "minlat",
+            "in": "query",
+            "description": "southern limit",
+            "required": false,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0
+          },
+          {
+            "name": "maxlat",
+            "in": "query",
+            "description": "northern limit",
+            "required": false,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0
           },
           {
             "name": "orderby",
