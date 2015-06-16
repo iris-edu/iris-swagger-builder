@@ -54,6 +54,29 @@
   <div class="col-xs-12">
               <div id="page-content">
 
+  <div>
+    <label>Pick a service:</label>
+    <select id="service">
+      <option>dmsp</option>
+      <option>intermagnet</option>
+      <option>rkgravitymag</option>
+      <option>waterleveltides</option>
+      <option>event</option>
+    </select>
+  </div>
+  <script type="text/javascript">
+    $(function() {
+      var service = window.location.search.slice(1);
+      if (service) {
+        $("#service").val(service);
+      }
+      $("#service").change(function() {
+        var service = $(this).val();
+        window.location.search = "?" + service;
+      });
+    });
+  </script>
+
                   <h1>
   URL Builder:
   <span id="operation-summary"></span>
@@ -120,7 +143,10 @@
 
   <script type="text/javascript">
   $(function() {
-    var swaggerBuilder = new Builder();
+    var service = $("#service").val();
+    var swaggerBuilder = new Builder({
+      swaggerURL: "/swagger-" + service + ".json"
+    });
     swaggerBuilder.run().then(function() {
       // Init builder
       $("#builder-form").builder();

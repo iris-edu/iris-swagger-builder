@@ -44,7 +44,10 @@
             "in": "query",
             "description": "Comma separated list, e.g. 9411166,MAHU  - empty list selects any.",
             "required": false,
-            "type": "string",
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
             "default": ""
           },
           {
@@ -87,13 +90,15 @@
             "name": "starttime",
             "in": "query",
             "description": "start time for desired coverage",
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           {
             "name": "endtime",
             "in": "query",
             "description": "end time for desired coverage",
-            "type": "string"
+            "type": "string",
+            "format": "date-time"
           },
           {
             "name": "skipNullLatLong",

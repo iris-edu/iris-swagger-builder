@@ -11,12 +11,17 @@
 #builder-form label {
   margin-top: 6px;
 }
+#builder-form input.checkbox {
+  margin-top: 6px;
+}
+/*
 #builder-form label.checkbox, #builder-form label.radio {
   margin-top: 0;
 }
+*/
 /* Allow the query URL to break anywhere */
 a#url {
-  word-break: break-all; 
+  word-break: break-all;
 }
 
 /* For bootstrap Validator js plugin */

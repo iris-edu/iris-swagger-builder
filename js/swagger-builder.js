@@ -93,8 +93,10 @@ var Builder = (function($) {
     var parameters = definition.operation.parameters;
     for (var i = 0, len = parameters.length; i < len; i++) {
       var parameter = parameters[i];
-      this.renderField(parameter);
-      this.renderUsage(parameter);
+      if (parameter.in === 'query') {
+        this.renderField(parameter);
+        this.renderUsage(parameter);
+      }
     }
   };
 
@@ -124,8 +126,11 @@ var Builder = (function($) {
 
   Builder.prototype.renderInput = function(parameter) {
     var $input;
-    if (parameter.enum) {
-      $input = $('<select>');
+    if (parameter.type === 'boolean') {
+      $input = $('<input type="checkbox" value="true" class="checkbox">');
+    }
+    else if (parameter.enum) {
+      $input = $('<select class="form-control">');
       for (var i = 0, len = parameter.enum.length; i < len; i++) {
         var $option = $('<option>')
           .text(parameter.enum[i])
@@ -133,24 +138,23 @@ var Builder = (function($) {
         $input.append($option);
       }
     }
-    else if (parameter.type === 'boolean') {
-      $input = $('<input type="checkbox" value="true">');
-    }
     else {
-      $input = $('<input type="text">');
+      $input = $('<input type="text" class="form-control">');
     }
     $input.prop('id', parameter.id)
-          .prop('name', parameter.name)
-          .addClass('form-control');
-    if (parameter['default']) {
-      $input.val(parameter['default']);
-    }
-    if (!parameter.required) {
-      var $wrapper = $('<div>');
-      $wrapper.append(
-        $('<input type="checkbox">').prop('id', parameter.id + '-check'),
-        $input);
-      return $wrapper;
+          .prop('name', parameter.name);
+    if (parameter.type != 'boolean') {
+      if (parameter.default) {
+        $input.val(parameter.default);
+      }
+      if (!parameter.required) {
+        var $wrapper = $('<div>');
+        $wrapper.append(
+          $('<input type="checkbox">').prop('id', parameter.id + '-check'),
+          " ",
+          $input);
+        return $wrapper;
+      }
     }
     return $input;
   };

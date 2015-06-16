@@ -6563,7 +6563,6 @@ button.close {
  * Header
  * ====== */
 #header-container {
-  background-image: url(/static/img/layout/backgrounds/header-gradient.png);
   width: 100%;
   margin-bottom: 1em;
   -webkit-box-shadow: 0 0 7px rgba(0, 0, 0, 0.15);
@@ -6683,7 +6682,6 @@ button.close {
   max-width: 17em;
 }
 #footer-bottom {
-  background-image: url(/static/img/layout/backgrounds/footer-bottom.png);
   background-position: top center;
   background-repeat: no-repeat;
   text-align: center;
@@ -6756,7 +6754,6 @@ button.close {
 html,
 body {
   background-color: #ffffff;
-  background-image: url(/static/img/layout/backgrounds/map.png);
   background-repeat: repeat-x;
   background-position: center top;
   color: #333333;
