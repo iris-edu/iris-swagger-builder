@@ -110,6 +110,46 @@
             "minimum": -90.0
           },
           {
+            "name": "lat",
+            "in": "query",
+            "description": "Latitude",
+            "required": false,
+            "type": "number",
+            "default": 40,
+            "maximum": 90.0,
+            "minimum": -90.0
+          },
+          {
+            "name": "lon",
+            "in": "query",
+            "description": "Longitude",
+            "required": false,
+            "type": "number",
+            "default": -100,
+            "maximum": 180.0,
+            "minimum": -180.0
+          },
+          {
+            "name": "minradius",
+            "in": "query",
+            "description": "Minimum radius",
+            "required": false,
+            "type": "number",
+            "default": 0.0,
+            "maximum": 180.0,
+            "minimum": 0.0
+          },
+          {
+            "name": "maxradius",
+            "in": "query",
+            "description": "Maximum radius",
+            "required": false,
+            "type": "number",
+            "default": 30.0,
+            "maximum": 180.0,
+            "minimum": 0.0
+          },
+          {
             "name": "orderby",
             "in": "query",
             "description": "List all contributed event origins; otherwise, choose only the origin from the preferred contributor.",
