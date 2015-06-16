@@ -52,14 +52,13 @@ var Builder = (function($) {
     if (this.required) {
       $label.addClass('requiredField');
     }
-    var $row = $('<div>').addClass('row').prop('id', this.id + '-row')
-      .append(
-        $('<div>').addClass(builder.options.labelClass)
-          .append($label))
-      .append(
-        $('<div>').addClass(builder.options.fieldClass)
-          .append($input)
-          .append($('<div>').addClass('help-block').html(this.description)));
+    var $row = $('<div>').addClass('row').prop('id', this.id + '-row');
+    var $label = $('<div>').addClass(builder.options.labelClass).append($label);
+    var $field = $('<div>').addClass(builder.options.fieldClass).append($input);
+    if (builder.options.showHelpText.indexOf('inline') > -1) {
+        $field.append($('<div>').addClass('help-block').html(this.description));
+    }
+    $row.append($label, $field);
     return $row;
   };
 
@@ -206,6 +205,8 @@ var Builder = (function($) {
       /* Bootstrap form classes */
       labelClass: 'col-xs-2',
       fieldClass: 'col-xs-10',
+      /* Where to show parameter help text, options are 'inline', 'dialog', 'inline,dialog' or '' */
+      showHelpText: 'dialog'
   };
 
   function Builder(options) {
@@ -307,7 +308,9 @@ var Builder = (function($) {
     this.$operationSummary.html(this.operation.summary);
     this.$operationDescription.html(this.operation.description);
     this.$form.prop('action', "http://" + this.service.host + this.service.basePath + this.service.path);
+    if (this.options.showHelpText.indexOf('dialog') > -1) {
         this.$usage.append(this.renderUsage());
+    }
     var items = this.options.layout;
     if (!items) {
       items = this.parameter_names;
