@@ -3,37 +3,52 @@
 
 var Builder = (function($) {
 
+  /**
+   * Base class for any component that needs to render itself onto the page
+   */
   function Renderable() {}
+  /* Render an item */
   Renderable.prototype.render = function(builder) {}
+  /* Render a list of sub-items, which are assumed to be Renderable or a field name */
   Renderable.prototype.renderItems = function(builder, items) {
     var rendered = [];
     for (var _i = 0, _len = items.length; _i < _len; _i++) {
       var item = items[_i];
       if (!item.render) {
-        item = builder.options.parameters[item];
+        item = builder.param_builders[item];
       }
-      rendered.push(item.render(builder));
+      if (item && item.render) {
+        rendered.push(item.render(builder));
+      } else {
+        throw "Could not render " + items[_i];
+      }
     }
     return rendered;
   };
 
-  function Parameter() {}
-  IRIS.Extend(Parameter, Renderable);
+  /**
+   * Base class for a query parameter which appears as a form input.
+   */
+  function ParameterBuilder() {}
+  IRIS.Extend(ParameterBuilder, Renderable);
 
-  Parameter.prototype.initialize = function(paramDefinition) {
+  ParameterBuilder.prototype.initialize = function(paramDefinition) {
     $.extend(true, this, paramDefinition);
     this.id = this.name;
   };
 
-  Parameter.prototype.renderUsage = function(builder) {
-    var $label = $('<th>').text(builder.getFieldLabel(this.name));
+  /* Render a row in the usage popup */
+  ParameterBuilder.prototype.renderUsage = function(builder) {
+    var $label = $('<th>').text(this.label || this.name);
     var $description = $('<td>').html(this.description);
     return $('<tr>').append($label, $description);
   };
 
-  Parameter.prototype.render = function(builder) {
+  /* Render the parameter as a row (label + field) in the form */
+  ParameterBuilder.prototype.render = function(builder) {
     var $input = this.renderInput(builder);
-    var $label = $('<label>').prop('for', this.id).text(builder.getFieldLabel(this.name));
+    var label = builder.getFieldLabel(this.name);
+    var $label = $('<label>').prop('for', this.id).text(label);
     if (this.required) {
       $label.addClass('requiredField');
     }
@@ -48,10 +63,9 @@ var Builder = (function($) {
     return $row;
   };
 
-  Parameter.prototype.renderInput = function(builder) {
+  /* Render the field area (widget with possible checkbox or other decoration) for the parameter */
+  ParameterBuilder.prototype.renderInput = function(builder) {
     var $widget = this.renderWidget(builder);
-    $widget.prop('id', this.id)
-          .prop('name', this.name);
     if (this.type != 'boolean') {
       if (this.default) {
         $widget.val(this.default);
@@ -68,7 +82,9 @@ var Builder = (function($) {
     return $widget;
   };
 
-  Parameter.prototype.renderWidget = function(builder) {
+  /* Render the actual widget for the parameter */
+  ParameterBuilder.prototype.renderWidget = function(builder) {
+    var $widget;
     if (this.type === 'boolean') {
       $widget = $('<input type="checkbox" value="true" class="checkbox">');
     }
@@ -76,8 +92,9 @@ var Builder = (function($) {
       $widget = $('<select class="form-control">');
       for (var _i = 0, _len = this.enum.length; _i < _len; _i++) {
         var val = this.enum[_i];
+        var label = builder.getOptionLabel(this.name, val);
         var $option = $('<option>')
-          .text(builder.getOptionLabel(this.name, val))
+          .text(label)
           .val(val);
         $widget.append($option);
       }
@@ -85,15 +102,29 @@ var Builder = (function($) {
     else {
       $widget = $('<input type="text" class="form-control">');
     }
+    $widget.prop('id', this.id).prop('name', this.name);
     return $widget;
   };
 
-  function DateParameter() {}
-  IRIS.Extend(DateParameter, Parameter);
-  DateParameter.prototype.renderWidget = function() {
-    return $('<input type="date" class="form-control">');
+  /**
+   * A parameter representing a date
+   */
+  function DateBuilder() {}
+  IRIS.Extend(DateBuilder, ParameterBuilder);
+  DateBuilder.prototype.renderWidget = function() {
+    var $widget = $('<input type="date" class="date-input form-control">');
+    $widget.prop('id', this.id).prop('name', this.name);
+    var $field = $('<div class="input-group">');
+    $field.prop('id', this.id + "-field");
+    $field.append($widget);
+    return $field;
   };
 
+  /**
+   * Defines a columnar layout, each argument to the constructor should be a list that can be
+   * passed to Renderable.render_items(), eg. each element of each list should be a Renderable
+   * or a field name.
+   */
   function Columns() {
     this.columns = [];
     for (var _i = 0, _len = arguments.length; _i < _len; _i++) {
@@ -112,6 +143,10 @@ var Builder = (function($) {
     return $row;
   };
 
+  /**
+   * Defines a fieldset.  The first argument is the legend, remaining arguments are
+   * Renderables and/or field names.
+   */
   function Fieldset() {
     this.legend = arguments[0];
     this.items = [];
@@ -126,23 +161,32 @@ var Builder = (function($) {
     return $fieldset;
   };
 
-
-  function OptGroup() {
-    this.options = [];
-    this.name = arguments[0];
-    for (var _i = 1, _len = arguments.length; _i < _len; _i++) {
-      this.options.push(arguments[_i]);
-    }
+  /**
+   * Defines set of radio buttons, each of which is tied to a set of fields.
+   */
+  function OptGroup(name) {
+    this.name = name;
+    this.options = Array.prototype.slice.call(arguments, 1);
   }
   IRIS.Extend(OptGroup, Renderable);
   OptGroup.prototype.render = function(builder) {
     var $div = $('<div>')
     for (var _i = 0, _len = this.options.length; _i < _len; _i++) {
       var option = this.options[_i];
-      $div.append(this.renderItems(builder, option));
+      var $radio = $('<input type="radio">');
+      var id = option[0];
+      $radio.prop('name', this.name).prop('value', id);
+      var $label = $('<label>').append(
+        $radio, option[0]
+      );
+      var $subdiv = $('<div>').append(
+        this.renderItems(builder, option.slice(1))
+      );
+      $div.append($label, $subdiv);
     }
     return $div;
-  }
+  };
+
 
   var DEFAULTS = {
     swaggerURL: 'swagger-rkgravitymag.json',
@@ -209,20 +253,22 @@ var Builder = (function($) {
   };
 
   Builder.prototype.parseSwaggerOperation = function(operationData) {
-    var parameters = operationData.parameters;
+    this.parameters = operationData.parameters;
     this.parameter_names = [];
-    this.parameter_map = {};
-    for (var _i = 0, _len = parameters.length; _i < _len; _i++) {
-      if (parameters[_i].in === 'query') {
-        var param = parameters[_i];
+    this.param_builders = {};
+    for (var _i = 0, _len = this.parameters.length; _i < _len; _i++) {
+      if (this.parameters[_i].in === 'query') {
+        var param = this.parameters[_i];
+        if (this.options.parameters) {
+          $.extend(true, param, this.options.parameters[param.name]);
+        }
         this.parameter_names.push(param.name);
-        if (!this.options.parameters) {
-          this.options.parameters = {};
+        var param_builder = param.builder;
+        if (!param_builder) {
+          param_builder = new ParameterBuilder();
         }
-        if (!this.options.parameters[param.name]) {
-          this.options.parameters[param.name] = new Parameter();
-        }
-        this.options.parameters[param.name].initialize(param);
+        this.param_builders[param.name] = param_builder;
+        param_builder.initialize(param);
       }
     }
   };
@@ -253,33 +299,28 @@ var Builder = (function($) {
   Builder.prototype.renderUsage = function() {
     var usage = []
     for (var _i = 0, _len = this.parameter_names.length; _i < _len; _i++) {
-      var parameter = this.options.parameters[this.parameter_names[_i]];
-      usage.push(parameter.renderUsage(this));
+      var param_builder = this.param_builders[this.parameter_names[_i]];
+      usage.push(param_builder.renderUsage(this));
     }
     return usage;
   };
 
   Builder.prototype.getFieldLabel = function(name) {
-    if (this.options.labels && this.options.labels[name]) {
-      return this.options.labels[name];
-    }
-    else {
-      return name;
-    }
+    var param_builder = this.param_builders[name];
+    return param_builder.label || name;
   };
 
   Builder.prototype.getOptionLabel = function(name, value) {
-    if (this.options.options && this.options.options[name] && this.options.options[name][value]) {
-      return this.options.options[name][value];
-    }
-    else {
+    var param_builder = this.param_builders[name];
+    if (!param_builder.enum_labels) {
       return value;
     }
+    return param_builder.enum_labels[value] || value;
   };
 
   return {
-    Parameter: Parameter,
-    DateParameter: DateParameter,
+    ParameterBuilder: ParameterBuilder,
+    DateBuilder: DateBuilder,
     Columns: Columns,
     OptGroup: OptGroup,
     Fieldset: Fieldset,

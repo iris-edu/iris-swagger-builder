@@ -3,6 +3,8 @@
   <head>
       <title>Swagger builder demo</title>
 
+  <meta charset="utf-8">
+
   <!-- Forces IE to render in 'latest' compatible mode -->
   <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 
@@ -148,26 +150,38 @@
   var swaggerBuilder;
   $(function() {
     swaggerBuilder = new Builder.Builder({
-      swaggerURL: "blueprint-event.json",
+      swaggerURL: "swagger-event.json",
       labelClass: "col-xs-3",
       fieldClass: "col-xs-9",
       parameters: {
-        starttime: new Builder.DateParameter(),
-        endtime: new Builder.DateParameter()
-      },
-      labels: {
-        starttime: "Start Time",
-        endtime: "End Time",
-        minmag: "Minimum Magnitude",
-        maxmag: "Maximum Magnitude",
-        magtype: "Magnitude Type"
-      },
-      options: {
+        starttime: {
+          label: "Start Time",
+          builder: new Builder.DateBuilder()
+        },
+        endtime: {
+          label: "End Time",
+          builder: new Builder.DateBuilder()
+        },
+        minmag: {
+          label: "Minimum Magnitude"
+        },
+        maxmag: {
+          label: "Maximum Magnitude"
+        },
+        magtype: {
+          label: "Magnitude Type",
+          enum_labels: {
+            "MB": "Body magnitude"
+          }
+        },
         format: {
-          xml: "XML (QuakeML)",
-          text: "Text (CSV)"
+          enum_labels: {
+            xml: "XML (QuakeML)",
+            text: "Text (CSV)"
+          }
         }
       },
+      /*
       layout: [
         new Builder.Columns(
           [
@@ -187,6 +201,7 @@
         ),
         "format"
       ]
+    */
     });
     swaggerBuilder.run().then(function() {
       // Init builder

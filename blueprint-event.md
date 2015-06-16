@@ -14,17 +14,17 @@ The fdsnws-event web service returns event (earthquake) information from the cat
 
      + minmag: `6` (number) - Minimum magnitude
 
-     + maxmag: `6` (number) - Maximum magnitude
+     + maxmag: `9` (number) - Maximum magnitude
 
      + magtype: (enum[string]) - Magnitude type
 
           Some common magnitude types are listed, other types may be specified by modifying the URL
 
           + Members
-               + `MB`
-               + `ML`
-               + `MS`
-               + `MW`
+               + `MB` - MB (Body magnitude)
+               + `ML` - ML ()
+               + `MS` - MS ()
+               + `MW` - MW (Wave)
 
      + minlon: (number) - Western limit
 
@@ -32,11 +32,13 @@ The fdsnws-event web service returns event (earthquake) information from the cat
 
      + orderby: (enum[string]) - Order by
 
+          + Default: `time`
+
           + Members
-               + `time` - Time (descending)
-               + `time-asc` - Time (ascending)
-               + `magnitude` - Magnitude (descending)
-               + `magnitude-asc` - Magnitude (ascending)
+               + `time` - Time descending
+               + `time-asc` - Time ascending
+               + `magnitude` - Magnitude descending
+               + `magnitude-asc` - Magnitude ascending
 
 + Response 200 (text/plain)
 
