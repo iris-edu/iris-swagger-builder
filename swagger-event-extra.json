@@ -1,0 +1,51 @@
+{
+  labelClass: "col-xs-3",
+  fieldClass: "col-xs-9",
+  parameters: {
+    starttime: {
+      label: "Start Time",
+      builder: new Builder.DateBuilder()
+    },
+    endtime: {
+      label: "End Time",
+      builder: new Builder.DateBuilder()
+    },
+    minmag: {
+      label: "Minimum Magnitude"
+    },
+    maxmag: {
+      label: "Maximum Magnitude"
+    },
+    magtype: {
+      label: "Magnitude Type",
+      enum_labels: {
+        "MB": "Body magnitude"
+      }
+    },
+    format: {
+      enum_labels: {
+        xml: "XML (QuakeML)",
+        text: "Text (CSV)"
+      }
+    }
+  },
+  layout: [
+    new Builder.Columns(
+      [
+        new Builder.Fieldset("Date/Time", "starttime", "endtime"),
+        new Builder.Fieldset("Magnitude", "minmag", "maxmag", "magtype")
+      ],
+      [
+        new Builder.Fieldset("Location",
+          new Builder.OptGroup(
+            'location_type',
+            ['All'],
+            ['Lat/Lon Box', "maxlat", "maxlon", "minlat", "minlon" ],
+            ['Lat/Lon Radius', "lat", "lon", "minradius", "maxradius" ]
+          )
+        )
+      ]
+    ),
+    "format"
+  ]
+}
