@@ -145,7 +145,7 @@
   $(function() {
     var service = $("#service").val();
     var swaggerBuilder = new Builder({
-      swaggerURL: "/swagger-" + service + ".json"
+      swaggerURL: "swagger-" + service + ".json"
     });
     swaggerBuilder.run().then(function() {
       // Init builder
