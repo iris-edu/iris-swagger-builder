@@ -24,7 +24,7 @@ var Builder = (function($) {
         var rendered = [];
         $.each(items, function(_i, item) {
             if (!item.render) {
-                item = builder.param_builders[item];
+                item = builder.params[item];
             }
             if (item && item.render) {
                 rendered.push(item.render(builder));
@@ -38,21 +38,21 @@ var Builder = (function($) {
     /**
      * Base class for a query parameter which appears as a form input.
      */
-    function ParameterBuilder() {}
-    IRIS.Extend(ParameterBuilder, Renderable);
+    function Parameter() {}
+    IRIS.Extend(Parameter, Renderable);
 
     // Options, these can be overridden by specifying them in the builder definition
-    ParameterBuilder.prototype.inputSize = 10;
-    ParameterBuilder.prototype.checkbox = null;
+    Parameter.prototype.inputSize = 10;
+    Parameter.prototype.checkbox = null;
 
-    ParameterBuilder.prototype.initialize = function(paramDefinition) {
+    Parameter.prototype.initialize = function(paramDefinition) {
         var self = this;
         $.extend(true, self, paramDefinition);
         self.id = self.name;
     };
 
     /* Return the parameter label */
-    ParameterBuilder.prototype.getLabel = function(builder) {
+    Parameter.prototype.getLabel = function(builder) {
         var self = this;
         if (self.label) {
             return self.label;
@@ -62,7 +62,7 @@ var Builder = (function($) {
     };
 
     /* Return the label for the given enum value */
-    ParameterBuilder.prototype.getEnumLabel = function(value) {
+    Parameter.prototype.getEnumLabel = function(value) {
         var self = this;
         if (!self.enum_labels) {
             return value;
@@ -71,7 +71,7 @@ var Builder = (function($) {
     };
 
     /* Render a row in the usage popup */
-    ParameterBuilder.prototype.renderUsage = function(builder) {
+    Parameter.prototype.renderUsage = function(builder) {
         var self = this;
         var $label = $('<th>').text(self.getLabel(builder));
         var $description = $('<td>').html(self.description);
@@ -79,36 +79,34 @@ var Builder = (function($) {
     };
 
     /* Render the parameter as a row (label + field) in the form */
-    ParameterBuilder.prototype.render = function(builder) {
+    Parameter.prototype.render = function(builder) {
         var self = this;
-        var $input = self.renderInput(builder);
+        var $field = self.renderField(builder);
         var label = self.getLabel(builder);
         var $label = $('<label>').prop('for', self.id).text(label);
         if (self.required) {
             $label.addClass('requiredField');
         }
         var $row = $('<div>').addClass('row').prop('id', self.id + '-row');
-        var $label = $('<div>').addClass(builder.options.labelClass).append($label);
-        var $field = $('<div>').addClass(builder.options.fieldClass).append($input);
+        var $labelCol = $('<div>').addClass(builder.options.labelClass).append($label);
+        var $fieldCol = $('<div>').addClass(builder.options.fieldClass).append($field);
         if (builder.options.showHelpText.indexOf('inline') > -1) {
-            $field.append($('<div>').addClass('help-block').html(self.description));
+            $fieldCol.append($('<div>').addClass('help-block').html(self.description));
         }
-        $row.append($label, $field);
+        $row.append($labelCol, $fieldCol);
         return $row;
     };
 
     /* Render the field area (widget with possible checkbox or other decoration) for the parameter */
-    ParameterBuilder.prototype.renderInput = function(builder) {
+    Parameter.prototype.renderField = function(builder) {
         var self = this;
         var $widget = self.renderWidget(builder);
         if (self.type != 'boolean') {
-            if (self.default) {
-                $widget.val(self.default);
-            }
             if (self.checkbox === true || (self.checkbox === null && !self.required)) {
                 var $wrapper = $('<div>');
+                var $checkbox = $('<input type="checkbox">').prop('id', self.id + '-check')
                 $wrapper.append(
-                    $('<input type="checkbox">').prop('id', self.id + '-check'),
+                    $checkbox,
                     " ",
                     $widget);
                 return $wrapper;
@@ -118,25 +116,30 @@ var Builder = (function($) {
     };
 
     /* Render the actual widget for the parameter */
-    ParameterBuilder.prototype.renderWidget = function(builder) {
+    Parameter.prototype.renderWidget = function(builder) {
         var self = this;
         var $widget;
         if (self.type === 'boolean') {
             $widget = $('<input type="checkbox" value="true" class="checkbox">');
         }
-        else if (self.enum) {
-            $widget = $('<select class="form-control">');
-            $.each(self.enum, function(_i, val) {
-                var label = self.getEnumLabel(val);
-                var $option = $('<option>')
-                    .text(label)
-                    .val(val);
-                $widget.append($option);
-            });
-        }
         else {
-            $widget = $('<input type="text" class="form-control">');
-            $widget.prop('size', self.inputSize);
+            if (self.enum) {
+                $widget = $('<select class="form-control">');
+                $.each(self.enum, function(_i, val) {
+                    var label = self.getEnumLabel(val);
+                    var $option = $('<option>')
+                        .text(label)
+                        .val(val);
+                    $widget.append($option);
+                });
+            }
+            else {
+                $widget = $('<input type="text" class="form-control">');
+                $widget.prop('size', self.inputSize);
+            }
+            if (self.default) {
+                $widget.val(self.default);
+            }
         }
         $widget.prop('id', self.id).prop('name', self.name);
         return $widget;
@@ -145,22 +148,36 @@ var Builder = (function($) {
     /**
      * A parameter representing a date
      */
-    function DateBuilder(options) { this.options = options; }
-    IRIS.Extend(DateBuilder, ParameterBuilder);
-    DateBuilder.prototype.renderWidget = function() {
+    function DateParameter(options) { this.options = options; }
+    IRIS.Extend(DateParameter, Parameter);
+    DateParameter.prototype.inputSize = 18;
+    DateParameter.prototype.includeTime = false;
+    DateParameter.prototype.renderWidget = function(builder) {
         var self = this;
         var $widget = $('<input type="date" class="date-input form-control">');
         $widget.prop('id', self.id).prop('name', self.name);
         $widget.prop('size', self.inputSize);
-        var $field = $('<div class="input-group">');
-        $field.prop('id', self.id + "-field");
-        $field.append($widget);
-        if ($.fn.datepicker) {
-            $widget.datepicker();
-            $('.ui-datepicker-trigger', $field).addClass('btn btn-default').wrap('<div class="input-group-btn">');
+        if (self.default) {
+            $widget.val(self.default);
         }
-        return $field;
+        var $field = $('<div class="input-group">').prop('id', self.id + '-field').append($widget);
+        if (self.includeTime) {
+            if ($.fn.datetimepicker) {
+                $widget.datetimepicker();
+                $('.ui-datepicker-trigger', $field).addClass('btn btn-default').wrap('<div class="input-group-btn">');
+            }
+        } else {
+            if ($.fn.datepicker) {
+                $widget.datepicker();
+                $('.ui-datepicker-trigger', $field).addClass('btn btn-default').wrap('<div class="input-group-btn">');
+            }
+        }
+        return $('<div class="date-input-wrapper">').append($field);
     };
+
+    function DateTimeParameter(options) { this.options = options; }
+    IRIS.Extend(DateTimeParameter, DateParameter);
+    DateTimeParameter.prototype.includeTime = true;
 
     /**
      * Defines a columnar layout, each argument to the constructor should be a list that can be
@@ -268,6 +285,7 @@ var Builder = (function($) {
         self.builderActions = [];
     };
 
+    /* Main execution block for the Swagger Builder */
     Builder.prototype.run = function() {
         var self = this;
         self.initDOM();
@@ -288,6 +306,7 @@ var Builder = (function($) {
             }
         ).then(function() {
             $("form#builder-form").builder(self.options);
+        }).then(function() {
             $.each(self.builderActions, function(_i, action) {
                     action();
             })
@@ -299,6 +318,7 @@ var Builder = (function($) {
         return self.done;
     };
 
+    /* Parse and build based on the top level Swagger JSON */
     Builder.prototype.parseSwaggerData = function(data) {
         var self = this;
         self.service = {
@@ -312,27 +332,29 @@ var Builder = (function($) {
         self.parseSwaggerOperation(self.operation);
     };
 
+    /* Parse and build for a particular Swagger operation */
     Builder.prototype.parseSwaggerOperation = function(operationData) {
         var self = this;
         self.parameters = operationData.parameters;
         self.parameter_names = [];
-        self.param_builders = {};
+        self.params = {};
         $.each(self.parameters, function(_i, param) {
             if (param.in == 'query') {
                 if (self.options.parameters) {
                     $.extend(true, param, self.options.parameters[param.name]);
                 }
                 self.parameter_names.push(param.name);
-                var param_builder = param.builder;
-                if (!param_builder) {
-                    param_builder = new ParameterBuilder();
+                var paramObj = param.class;
+                if (!paramObj) {
+                    paramObj = new Parameter();
                 }
-                self.param_builders[param.name] = param_builder;
-                param_builder.initialize(param);
+                self.params[param.name] = paramObj;
+                paramObj.initialize(param);
             }
         });
     };
 
+    /* Initialize the page DOM elements that this builder will control */
     Builder.prototype.initDOM = function() {
         this.$serviceTitle = $('#service-title').empty();
         this.$serviceDescription = $('#service-description').empty();
@@ -342,6 +364,7 @@ var Builder = (function($) {
         this.$usage = $('#usage-table').empty();
     };
 
+    /* Main render function */
     Builder.prototype.render = function() {
         var self = this;
         self.$serviceTitle.html(self.service.title);
@@ -359,12 +382,13 @@ var Builder = (function($) {
         self.$form.append(self.renderItems(self, items));
     };
 
+    /* Render the usage dialog content */
     Builder.prototype.renderUsage = function() {
         var self = this;
         var usage = []
         $.each(self.parameter_names, function(_i, param_name) {
-            var param_builder = self.param_builders[param_name];
-            usage.push(param_builder.renderUsage(self));
+            var paramObj = self.params[param_name];
+            usage.push(paramObj.renderUsage(self));
         });
         return usage;
     };
@@ -375,8 +399,9 @@ var Builder = (function($) {
     };
 
     return {
-        ParameterBuilder: ParameterBuilder,
-        DateBuilder: DateBuilder,
+        Parameter: Parameter,
+        DateParameter: DateParameter,
+        DateTimeParameter: DateTimeParameter,
         Columns: Columns,
         OptGroup: OptGroup,
         Fieldset: Fieldset,

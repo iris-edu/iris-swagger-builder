@@ -24,6 +24,11 @@ a#url {
   word-break: break-all;
 }
 
+.date-input-wrapper {
+  display: inline-block;
+  vertical-align: middle;
+}
+
 /* For bootstrap Validator js plugin */
 a.validate-bs-validator-blur {
   color:#A94442;

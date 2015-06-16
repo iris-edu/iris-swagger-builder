@@ -525,55 +525,33 @@ if (typeof(DEBUG) === 'undefined') {
 
     /* Date inputs */
 
-    DEBUG("Running datepickers");
-    $(function() {
-        /* Run this in a callback to ensure it runs after any other initialization */
-        DEBUG("Running datepickers");
-        setTimeout(function() {
-          DEBUG("Running datepickers");
-          if (!$.datetimeEntry) {
-              DEBUG("No datetimeEntry plugin");
-              return;
-          }
-          if (!$.datepicker) {
-              DEBUG("No datepicker plugin");
-              return;
-          }
-          if (!$.timepicker) {
-              DEBUG("No timepicker plugin");
-              return;
-          }
-          // DateTimeEntry
-          $.datetimeEntry.setDefaults({
-              datetimeFormat: 'Y-O-DTH:M:S',
-              useMouseWheel: false,
-              spinnerImage: ''
-          });
-          // JQueryUI datepicker
-          $.datepicker.setDefaults({
-              dateFormat: "yy-mm-dd",
-              changeMonth: true,
-              changeYear: true,
-              yearRange: "-50:+0",
-              showOn: "button",
-              buttonImage: 'calendar/calendarIcon.png',
-              buttonText: 'Click to browse a calendar',
-              constrainInput: true
-          });
-          $.timepicker.setDefaults({
-              showTime: false,
-              showHour: false,
-              showMinute: false,
-              showSecond: false,
-              timeFormat: 'HH:mm:ss',
-              separator: 'T'
-          });
-
-//          $('input.datetime-input').datetimepicker();
-//          $('input.date-input').datepicker();
-//          /* Need to style the buttons explicitly */
-//          $('.ui-datepicker-trigger').addClass('btn btn-default');
-        });
+    DEBUG("Initializing datepickers");
+    if (!$.datepicker) {
+        DEBUG("No datepicker plugin");
+        return;
+    }
+    if (!$.timepicker) {
+        DEBUG("No timepicker plugin");
+        return;
+    }
+    // JQueryUI datepicker
+    $.datepicker.setDefaults({
+        dateFormat: "yy-mm-dd",
+        changeMonth: true,
+        changeYear: true,
+        yearRange: "-50:+0",
+        showOn: "button",
+        buttonImage: 'calendar/calendarIcon.png',
+        buttonText: 'Click to browse a calendar',
+        constrainInput: true
+    });
+    $.timepicker.setDefaults({
+        showTime: false,
+        showHour: false,
+        showMinute: false,
+        showSecond: false,
+        timeFormat: 'HH:mm:ss',
+        separator: 'T'
     });
 
 })(jQuery);

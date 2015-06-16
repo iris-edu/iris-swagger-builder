@@ -1,26 +1,43 @@
 {
-  labelClass: "col-xs-3",
-  fieldClass: "col-xs-9",
+  labelClass: "col-xs-4",
+  fieldClass: "col-xs-8",
+  targetSelector: "#output",
   parameters: {
     starttime: {
       label: "Start Time",
-      builder: new Builder.DateBuilder()
+      builder: new Builder.DateBuilder(),
     },
     endtime: {
       label: "End Time",
       builder: new Builder.DateBuilder()
     },
     minmag: {
-      label: "Minimum Magnitude"
+      label: "Min Magnitude"
     },
     maxmag: {
-      label: "Maximum Magnitude"
+      label: "Max Magnitude"
     },
     magtype: {
       label: "Magnitude Type",
       enum_labels: {
         "MB": "Body magnitude"
       }
+    },
+    minlat: {
+      label: "Min Lat",
+      checkbox: false
+    },
+    maxlat: {
+      label: "Max Lat",
+      checkbox: false
+    },
+    minlon: {
+      label: "Min Lon",
+      checkbox: false
+    },
+    maxlon: {
+      label: "Max Lon",
+      checkbox: false
     },
     format: {
       enum_labels: {
@@ -38,9 +55,11 @@
       [
         new Builder.Fieldset("Location",
           new Builder.OptGroup(
-            'location_type',
+            '_location_type',
             ['All'],
-            ['Lat/Lon Box', "maxlat", "maxlon", "minlat", "minlon" ],
+            ['Lat/Lon Box',
+                new Builder.Columns(["minlat"], ["maxlat"]),
+                new Builder.Columns(["minlon"], ["maxlon"])],
             ['Lat/Lon Radius', "lat", "lon", "minradius", "maxradius" ]
           )
         )
