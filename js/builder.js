@@ -4,21 +4,21 @@
 var DEBUG;
 if (typeof(DEBUG) === 'undefined') {
     DEBUG = function(msg) {
-        // console.log(msg);
+        console.log(msg);
     };
 }
 
 /**
  * Form builder plugin.
- * 
+ *
  * Usage:
- * 
+ *
  * Enable builder functionality on a form
  * $("#myForm").builder();
- * 
- * 
- * 
- * 
+ *
+ *
+ *
+ *
  */
 (function($) {
 
@@ -27,16 +27,16 @@ if (typeof(DEBUG) === 'undefined') {
      * input, and update a query url link.
      * @param form A form
      * @param options An object overriding any of the options in WSBuilder.prototype.defaults
-     * @returns 
+     * @returns
      */
     var WSBuilder = function(form, options) {
         this.$form = $(form);
         this.options = $.extend( {}, this.defaults, options );
         this._start();
     };
-    
+
     WSBuilder.prototype = {
-        
+
         /**
          * Defaults
          */
@@ -45,7 +45,7 @@ if (typeof(DEBUG) === 'undefined') {
             urlLinkSelector: "#url",
             /** selector to get all inputs */
             inputSelector: "input, select, textarea",
-            /** 
+            /**
              * Suffixes that may be found on related element ids.  These are ordered
              * by dependency; for example, an input "cost" can be structured as:
              *
@@ -53,41 +53,41 @@ if (typeof(DEBUG) === 'undefined') {
              *   <input type="checkbox" id="cost-check" />
              *   <span id="cost-field"><input id="cost"> Dollars</span>
              * </div>
-             * 
+             *
              * By the default suffixes:
              * "cost" is enabled only if "cost-field" is enabled,
              * "cost-field" is enabled only if "cost-check" is enabled (and checked),
              * "cost-check" is enabled only if "cost-row" is enabled
-             * 
+             *
              * The two common use cases are:
              * 1. Disabling "cost-row" to disable everything.
              * 2. Deselecting "cost-check" to disable the input as well as the "cost-field" span,
              *       so the text around the field is also greyed out.
-             * 
+             *
              * Any of these can be omitted; for example, if there's no checkbox and no text
              * around the input, you can just say:
-             * 
+             *
              * <div id="cost-row">
              *   <input id="cost" />
              * </div>
-             * 
+             *
              */
-            relatedFieldSuffixes: 
-                [ "",       // The actual input 
+            relatedFieldSuffixes:
+                [ "",       // The actual input
                   "-field", // An inner container (with any text around the input)
                   "-check", // A checkbox that turns the input on/off
                   "-row"    // The entire input row
                   ],
-            /** 
-             * If the query URL needs to be serialized in a particular order (or with only 
-             * particular fields) a list of query parameter names can be given explicitly. 
+            /**
+             * If the query URL needs to be serialized in a particular order (or with only
+             * particular fields) a list of query parameter names can be given explicitly.
              */
             queryParamNames: null,
             /**
              * If no explicit query parameters are given, this filter function can be used to
              * exclude any unwanted parameters.  By default, it excludes and parameter whose
              * name starts with '_', which should be adequate for most purposes.
-             * 
+             *
              * The main reason this may be needed is for radio buttons.  Most unwanted inputs
              * can be left unnamed, but radio button groups rely on a name, so they have to be
              * actively filtered out of the query.
@@ -96,7 +96,7 @@ if (typeof(DEBUG) === 'undefined') {
                 return param.name.charAt(0) !== '_' && param.value != '';
             }
         },
-        
+
         /**
          * Startup
          */
@@ -113,7 +113,7 @@ if (typeof(DEBUG) === 'undefined') {
                 _builder._queueUpdate($("[id]", _builder.$form));
             });
         },
-        
+
         /**
          * Find all the inputs in the form, and listen for any changes to them.
          */
@@ -129,7 +129,7 @@ if (typeof(DEBUG) === 'undefined') {
                 _builder._queueUpdate($(this));
             });
         },
-        
+
         /**
          * Check an element for state changes.
          * We store state as "[isActive]:[value]", for example:
@@ -153,7 +153,7 @@ if (typeof(DEBUG) === 'undefined') {
                 }
             });
         },
-        
+
         /**
          * Get/set an unique id for an element.
          * If an element has an "id" property, that is used.  This is necessary
@@ -170,7 +170,7 @@ if (typeof(DEBUG) === 'undefined') {
             }
             return elemUID;
         },
-        
+
         /**
          * Hook up related elements.  For example, if there's an input with
          * id="name" and a checkbox with id "name-check", the input will automatically
@@ -186,7 +186,7 @@ if (typeof(DEBUG) === 'undefined') {
                 // Base id is the actual id by default
                 var base_id = elem_id;
                 $.each(_builder.options.relatedFieldSuffixes, function(i, suffix) {
-                    // If the id ends with the given suffix, the base id is the prefix 
+                    // If the id ends with the given suffix, the base id is the prefix
                     if (suffix !== "" && elem_id.slice(-suffix.length) === suffix) {
                         base_id = elem_id.slice(0,-suffix.length);
                     }
@@ -210,7 +210,11 @@ if (typeof(DEBUG) === 'undefined') {
             });
             /* Make date input buttons depend on the input, so they enable/disable in sync */
             $('.ui-datepicker-trigger').each(function() {
-               _builder.addDependsOn($(this), $(this).prev('input'));
+                var $dependency = $(this).prev('input');
+                if (!$dependency.length) {
+                  $dependency = $(this).closest('.input-group');
+                }
+               _builder.addDependsOn($(this), $dependency);
             });
             /* Make like-named radio buttons all depend on each other */
             var radio_names = {};
@@ -219,12 +223,12 @@ if (typeof(DEBUG) === 'undefined') {
               if (name && !radio_names[name]) {
                 radio_names[name] = true;
                 _builder.addUpdateOnChange(
-                  $('input:radio[name="'+name+'"]'), 
+                  $('input:radio[name="'+name+'"]'),
                   $('input:radio[name="'+name+'"]'));
               }
             });
         },
-        
+
         /**
          * Set up the url element that will be updated with the query.
          */
@@ -279,11 +283,11 @@ if (typeof(DEBUG) === 'undefined') {
                 });
             }
         },
-        
+
         /**
          * Update elements that have changed.  During the update, the changes may
          * spawn more updates.  These are added to the queue (in _queueUpdate),
-         * so the queue can grow during the update. 
+         * so the queue can grow during the update.
          */
         _onUpdate: function() {
             if (this._currentUpdate) {
@@ -304,7 +308,7 @@ if (typeof(DEBUG) === 'undefined') {
                         });
                     }
                     this.getSetActive($oneElem, active);
-                    
+
                     // Run any update handlers
                     var updateHandlers = $oneElem.data('builder.update-handlers');
                     if (updateHandlers) {
@@ -316,7 +320,7 @@ if (typeof(DEBUG) === 'undefined') {
                 this._onUpdateComplete();
             }
         },
-        
+
         /**
          * Callback executed when all element-level updates have completed.
          * This typically updates the url link.
@@ -336,7 +340,7 @@ if (typeof(DEBUG) === 'undefined') {
             var params = this.$form.serializeArray();
             if (this.options.queryParamNames) {
                 // Make params into a map so we can list them according to the given list
-                
+
             } else if (this.options.queryParamFilter) {
                 params = $.grep(params, this.options.queryParamFilter);
             }
@@ -344,7 +348,7 @@ if (typeof(DEBUG) === 'undefined') {
             this.$urlLink.html(url);
             this.$urlLink.prop('href', url);
         },
-        
+
         /**
          * Cause element(s) to be updated when other element(s) change.
          * @param $elem the element(s) that will be updated
@@ -352,24 +356,24 @@ if (typeof(DEBUG) === 'undefined') {
          */
         addUpdateOnChange: function($elem, $src) {
             var _builder = this;
-            // Add to the list of 
+            // Add to the list of
             $src.on("builder.update", function() {
                 DEBUG("Triggering update of " + $elem.selector + " from " + $src.selector);
                 _builder._queueUpdate($elem, this);
             });
             return $elem;
         },
-        
+
         /**
          * Make an element or element inactive if a given condition isn't satisfied.
-         * 
+         *
          * The condition can be a selector, in which case the condition is that
          * the selected elements are all active.
-         * 
+         *
          * Alternatively, the condition can be a function returning a boolean; returning
          * false will make the element inactive.
          *
-         * This can be called multiple times for an element; it will be deactivated 
+         * This can be called multiple times for an element; it will be deactivated
          * unless all conditions are satisfied.
          *
          * @param $elem
@@ -404,7 +408,7 @@ if (typeof(DEBUG) === 'undefined') {
             });
             return $elem;
         },
-        
+
         /**
          * Add a function that will be called whenever an element is updated.
          * This is called after the element has been enabled/disabled as a result
@@ -420,17 +424,17 @@ if (typeof(DEBUG) === 'undefined') {
             });
             return $elem;
         },
-        
+
         /**
          * Activate/deactivate an element, or return its active state
          * An element is considered inactive if:
          * - it has the "inactive" CSS class
          * - its "disabled" property is set (for inputs)
          * - it is a radio/checkbox and isn't checked
-         * 
+         *
          * This keeps an internal state to prevent trigger updates on non-changes, so
          * it's inadvisable to touch the CSS class or disabled input state outside of here.
-         * 
+         *
          * @param $elem
          * @param {Boolean} [active] whether to make active or not; if omitted, returns the active state
          */
@@ -450,10 +454,10 @@ if (typeof(DEBUG) === 'undefined') {
             }
         }
     };
-    
+
     // Single builder per page for now
     var builder;
-    
+
     $.fn.builder = function(options) {
         if (typeof(options) === 'string') {
             // Functions that can be called on form elements.  Most of these can
@@ -500,67 +504,74 @@ if (typeof(DEBUG) === 'undefined') {
         return this;
     };
 
+    /* Date inputs */
+
+    DEBUG("Running datepickers");
+    $(function() {
+        /* Run this in a callback to ensure it runs after any other initialization */
+        DEBUG("Running datepickers");
+        setTimeout(function() {
+          DEBUG("Running datepickers");
+          if (!$.datetimeEntry) {
+              DEBUG("No datetimeEntry plugin");
+              return;
+          }
+          if (!$.datepicker) {
+              DEBUG("No datepicker plugin");
+              return;
+          }
+          if (!$.timepicker) {
+              DEBUG("No timepicker plugin");
+              return;
+          }
+          // DateTimeEntry
+          $.datetimeEntry.setDefaults({
+              datetimeFormat: 'Y-O-DTH:M:S',
+              useMouseWheel: false,
+              spinnerImage: ''
+          });
+          // JQueryUI datepicker
+          $.datepicker.setDefaults({
+              dateFormat: "yy-mm-dd",
+              changeMonth: true,
+              changeYear: true,
+              yearRange: "-50:+0",
+              showOn: "button",
+              buttonImage: 'calendar/calendarIcon.png',
+              buttonText: 'Click to browse a calendar',
+              constrainInput: true
+          });
+          $.timepicker.setDefaults({
+              showTime: false,
+              showHour: false,
+              showMinute: false,
+              showSecond: false,
+              timeFormat: 'HH:mm:ss',
+              separator: 'T'
+          });
+
+//          $('input.datetime-input').datetimepicker();
+//          $('input.date-input').datepicker();
+//          /* Need to style the buttons explicitly */
+//          $('.ui-datepicker-trigger').addClass('btn btn-default');
+        });
+    });
+
 })(jQuery);
 
 
-
-/* Date inputs */
-$(function() {
-    if (!$.datetimeEntry) {
-        DEBUG("No datetimeEntry plugin");
-        return;
-    }
-    if (!$.datepicker) {
-        DEBUG("No datepicker plugin");
-        return;
-    }
-    if (!$.timepicker) {
-        DEBUG("No timepicker plugin");
-        return;
-    }
-    // DateTimeEntry
-    $.datetimeEntry.setDefaults({
-        datetimeFormat: 'Y-O-DTH:M:S',
-        useMouseWheel: false,
-        spinnerImage: ''
-    });
-    // JQueryUI datepicker
-    $.datepicker.setDefaults({
-        dateFormat: "yy-mm-dd",
-        changeMonth: true,
-        changeYear: true,
-        yearRange: "-50:+0",
-        showOn: "button",
-        buttonImage: '/static/calendar/calendarIcon.png',
-        buttonText: 'Click to browse a calendar',
-        constrainInput: true
-    });
-    $.timepicker.setDefaults({
-        showTime: false,
-        showHour: false,
-        showMinute: false,
-        showSecond: false,
-        timeFormat: 'HH:mm:ss',
-        separator: 'T'
-    });
-
-    $('input.datetime-input').datetimepicker();
-    $('input.date-input').datepicker();
-    /* Need to style the buttons explicitly */
-    $('.ui-datepicker-trigger').addClass('btn btn-default');
-});
 
 
 /* Popup dialog */
 /*
 $(function() {
- // Dialog           
+ // Dialog
     $('#dialog').dialog({
         autoOpen: false,
         width: 550,
         height: 450,
         postion: ['center', 'center']
-        
+
     });
     // Dialog Link
     $('#dialog_link').click(function(){

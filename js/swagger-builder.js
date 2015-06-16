@@ -117,6 +117,10 @@ var Builder = (function($) {
     var $field = $('<div class="input-group">');
     $field.prop('id', this.id + "-field");
     $field.append($widget);
+    if ($.fn.datepicker) {
+      $widget.datepicker();
+      $('.ui-datepicker-trigger', $field).addClass('btn btn-default').wrap('<div class="input-group-btn">');
+    }
     return $field;
   };
 
