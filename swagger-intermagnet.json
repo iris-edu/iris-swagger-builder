@@ -1,0 +1,317 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "GeoWS UnFunded INTERMAGNET",
+    "description": "Demonstration of accessing INTERMAGNET services using GeoWS technology. For more information about INTERMAGNET, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a>",
+    "termsOfService": "TBD",
+    "contact": {
+      "name": "geows@iris.washington.edu"
+    },
+    "license": {
+      "name": "GNU Lesser General Public License",
+      "url": "http://www.gnu.org/licenses/"
+    }
+  },
+  "host": "geows.ds.iris.edu",
+  "basePath": "/geows-uf/intermagnet/1",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/query": {
+      "get": {
+        "tags": [
+          "GeoWS INTERMAGNET"
+        ],
+        "summary": "Get INTERMAGNET data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download request and indication of acceptance of conditions of use",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "accept",
+            "in": "query",
+            "description": "I accept the conditions of use and I confirm that the e-mail address I have entered is correct",
+            "required": true,
+            "type": "boolean",
+            "default": "false"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "files or data, files - list of available files, data - text version of magnetic data",
+            "required": false,
+            "type": "string",
+            "default": "files",
+            "enum": [
+              "files",
+              "data"
+            ]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-10-30"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-11-01"
+          },
+          {
+            "name": "regions",
+            "in": "query",
+            "description": "Any or all of America,Asia,Europe,Pacific,Africa",
+            "required": true,
+            "type": "string",
+            "default": "America,Asia,Europe,Pacific,Africa"
+          },
+          {
+            "name": "latitudes",
+            "in": "query",
+            "description": "Any or all of NH,NM,E,SM,SH - where NH is North High Latitude, etc.",
+            "required": true,
+            "type": "string",
+            "default": "NH,NM,E,SM,SH"
+          },
+          {
+            "name": "observatories",
+            "in": "query",
+            "description": "Comma separated list, e.g. ASC,BOU,VIC  - empty list selects all.",
+            "required": false,
+            "type": "string",
+            "default": "AAA,BEL,CKI,DED,EBR,FCC,GAN"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of variation, provisional, quasi-definitive, best (best available), additionally for minute rate - definitive",
+            "required": true,
+            "type": "string",
+            "default": "best"
+          },
+          {
+            "name": "rate",
+            "in": "query",
+            "description": "minute or second",
+            "required": true,
+            "type": "string",
+            "default": "minute",
+            "enum": [
+              "minute",
+              "second"
+            ]
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "GeoWS INTERMAGNET"
+        ],
+        "summary": "Get INTERMAGNET data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download request and indication of acceptance of conditions of use",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "accept",
+            "in": "query",
+            "description": "I accept the conditions of use and I confirm that the e-mail address I have entered is correct",
+            "required": true,
+            "type": "boolean",
+            "default": "false"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "files or data, files - list of available files, data - text version of magnetic data",
+            "required": false,
+            "type": "string",
+            "default": "files",
+            "enum": [
+              "files",
+              "data"
+            ]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-10-30"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-11-01"
+          },
+          {
+            "name": "regions",
+            "in": "query",
+            "description": "Any or all of America,Asia,Europe,Pacific,Africa",
+            "required": true,
+            "type": "string",
+            "default": "America,Asia,Europe,Pacific,Africa"
+          },
+          {
+            "name": "latitudes",
+            "in": "query",
+            "description": "Any or all of NH,NM,E,SM,SH - where NH is North High Latitude, etc.",
+            "required": true,
+            "type": "string",
+            "default": "NH,NM,E,SM,SH"
+          },
+          {
+            "name": "observatories",
+            "in": "query",
+            "description": "Comma separated list, e.g. ASC,BOU,VIC  - empty list selects all.",
+            "required": false,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of variation, provisional, quasi-definitive, best (best available), additionally for minute rate - definitive",
+            "required": true,
+            "type": "string",
+            "default": "best"
+          },
+          {
+            "name": "rate",
+            "in": "query",
+            "description": "minute or second",
+            "required": true,
+            "type": "string",
+            "default": "minute",
+            "enum": [
+              "minute",
+              "second"
+            ]
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of service",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this service)",
+        "operationId": "getVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/wssversion": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of WebServiceShell",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this WebServiceShell (WSS))",
+        "operationId": "getWssVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "TBD_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://TBD/api/oauth/dialog",
+      "flow": "implicit"
+    }
+  }
+}

@@ -1,0 +1,32 @@
+/* Separator between fieldsets */
+#builder-form fieldset {
+  margin-bottom: 1em;
+}
+/* Separator between rows */
+#builder-form.form-inline .row {
+  margin-bottom: 5px;
+}
+
+/* Margins for various types of labels to align them correctly with inputs */
+#builder-form label {
+  margin-top: 6px;
+}
+#builder-form label.checkbox, #builder-form label.radio {
+  margin-top: 0;
+}
+/* Allow the query URL to break anywhere */
+a#url {
+  word-break: break-all; 
+}
+
+/* For bootstrap Validator js plugin */
+a.validate-bs-validator-blur {
+  color:#A94442;
+}
+a.validate-bs-validator-blur:hover {
+  text-decoration:none;
+  cursor:default;
+}
+div.with-errors > ul, div.with-errors > ol {
+   margin:0px;
+}

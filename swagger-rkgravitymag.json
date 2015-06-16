@@ -1,0 +1,256 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "GeoWS UnFunded Gravity and Magnetics",
+    "description": "Demonstration of accessing Randy Keller's Gravity and Magnetics services using GeoWS technology. For more information, see <a href='http://irpsrvgis08.utep.edu/viewers/Flex/GravityMagnetic/'>Gravity and Magnetic extract utility</a>",
+    "termsOfService": "TBD",
+    "contact": {
+      "name": "geows@iris.washington.edu"
+    },
+    "license": {
+      "name": "GNU Lesser General Public License",
+      "url": "http://www.gnu.org/licenses/"
+    }
+  },
+  "host": "geows.ds.iris.edu",
+  "basePath": "/geows-uf/rkgravitymag/1",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/query": {
+      "get": {
+        "tags": [
+          "GeoWS Randy Keller Gravity Magnetics"
+        ],
+        "summary": "Get Gravity or Magnetics Data",
+        "description": "<p>The <strong>rkgravitymag</strong> service provides gravity or magnetics data",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "One of text or JSON, default is text",
+            "required": false,
+            "type": "string",
+            "enum": ["text", "JSON"]
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of gravity or magnetics, default is magnetics",
+            "required": true,
+            "type": "string",
+            "default": "gravity",
+            "enum": ["gravity", "magnetics"]
+          },
+          {
+            "name": "minlongitude",
+            "in": "query",
+            "description": "western limit",
+            "required": true,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "default": -122.1
+          },
+          {
+            "name": "maxlongitude",
+            "in": "query",
+            "description": "eastern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "default": -121.3
+          },
+          {
+            "name": "minlatitude",
+            "in": "query",
+            "description": "southern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "default": 46.6
+          },
+          {
+            "name": "maxlatitude",
+            "in": "query",
+            "description": "northern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "default": 47.1
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "GeoWS Randy Keller Gravity Magnetics"
+        ],
+        "summary": "Get Gravity or Magnetics Data",
+        "description": "<p>The <strong>rkgravitymag</strong> service provides gravity or magnetics data",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "format",
+            "in": "query",
+            "description": "One of text or JSON, default is text",
+            "required": false,
+            "type": "string",
+            "enum": ["text", "JSON"]
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of gravity or magnetics, default is magnetics",
+            "required": true,
+            "type": "string",
+            "default": "gravity",
+            "enum": ["gravity", "magnetics"]
+          },
+          {
+            "name": "minlongitude",
+            "in": "query",
+            "description": "western limit",
+            "required": true,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "default": -122.1
+          },
+          {
+            "name": "maxlongitude",
+            "in": "query",
+            "description": "eastern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 180.0,
+            "minimum": -180.0,
+            "default": -121.3
+          },
+          {
+            "name": "minlatitude",
+            "in": "query",
+            "description": "southern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "default": 46.6
+          },
+          {
+            "name": "maxlatitude",
+            "in": "query",
+            "description": "northern limit",
+            "required": true,
+            "type": "number",
+            "maximum": 90.0,
+            "minimum": -90.0,
+            "default": 47.1
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of service",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this service)",
+        "operationId": "getVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/wssversion": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of WebServiceShell",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this WebServiceShell (WSS))",
+        "operationId": "getWssVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    }
+
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "TBD_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://TBD/api/oauth/dialog",
+      "flow": "implicit"
+    }
+  }
+}

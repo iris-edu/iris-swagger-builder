@@ -1,0 +1,49 @@
+/*
+OVERRIDE HQ STYLES
+FOR SERVICES DOMAIN
+AND ADD SOME EXTRAS
+
+MODIFIED: 2013-05-17 18:49 UTC (RLN)
+MODIFIED: 2013-11-27 00:30 UTC (RLN)
+*/
+
+/* HEADER ONLY */
+#header, #header-container, #logo, #logo img {
+  height:70px;
+}
+#header #header-left #logo-name {
+  margin: 25px 0 0 25px;
+}
+#nsf #nsf-logo {
+  position:relative;
+  bottom:10px;
+}
+
+/* BREADCRUMBS FONT BOOSTER */
+#breadcrumbs {
+  font-size: 95%;
+}
+
+/* OVERRIDE HQ STYLE */
+#page-content {
+  padding:10px 20px;
+}
+
+/* HARDHAT URL BUILDER ICON */
+.hardhat {
+  background:url(/static/webservicedoc/img/builder.png) no-repeat center left;
+  padding-left:70px;
+}
+a.hardhat {
+  white-space:normal;
+  font-weight:bold;
+}
+
+/* DIV ELEMENTS */
+div#webservicedoc-summary {
+  margin-top:1.0em;
+}
+
+/* FORM BUILDER CUSTOMIZATIONS */
+.inactive { color: #ccc; }
+.inactive.hide-if-inactive, input:disabled.hide-if-inactive { display: none; }

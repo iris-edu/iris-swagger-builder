@@ -1,0 +1,272 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "GeoWS UnFunded DMSP",
+    "description": "Demonstration of accessing NGDC next-web DMSP Catalog services using GeoWS technology. For more information about waterlevel tides, see <a href='http://www.ngdc.noaa.gov/next-web/docs/guide/catalog.html#dmspCatalog'>NGDC DMSP Catalog Service</a>",
+    "termsOfService": "TBD",
+    "contact": {
+      "name": "Support for GeoWS",
+      "email": "geows@iris.washington.edu"
+    },
+    "license": {
+      "name": "GNU Lesser General Public License",
+      "url": "http://www.gnu.org/licenses/"
+    }
+  },
+  "host": "geows.ds.iris.edu",
+  "basePath": "/geows-uf/dmsp/1",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/query": {
+      "get": {
+        "tags": [
+          "GeoWS NGDC next-web DMSP Catalog Service"
+        ],
+        "summary": "Get DMSP file list, extents, or data request",
+        "description": "<p>The <strong>dmsp</strong> service provides a list of files, data extent, or data request",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download - the destination for messages from NGDC next-web REST ordering service",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "files - provides a list of files, extents - estimate of total file size to download, or data - makes a request to process data for download",
+            "required": true,
+            "type": "string",
+            "default": "files",
+            "enum": ["files", "extents", "data"]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "1999-01-01T00:00:00"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "1999-01-02T05:00:00"
+          },
+          {
+            "name": "satellite",
+            "in": "query",
+            "description": "Case sensitive ID, e.g. F12 or F13, etc.",
+            "required": false,
+            "type": "string",
+            "default": "F13"
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "description": "A point of desired coverage",
+            "required": false,
+            "type": "number",
+            "default": "0",
+            "maximum": 180.0,
+            "exclusiveMaximum": true,
+            "minimum": -180.0,
+            "exclusiveMinimum": true
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "description": "A point of desired coverage",
+            "required": false,
+            "type": "number",
+            "default": "-10",
+            "maximum": 90.0,
+            "exclusiveMaximum": true,
+            "minimum": -90.0,
+            "exclusiveMinimum": true
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "GeoWS NGDC next-web DMSP Catalog Service"
+        ],
+        "summary": "Get DMSP file list, extents, or data request",
+        "description": "<p>The <strong>dmsp</strong> service provides a list of files, data extent, or data request",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download - the destination for messages from NGDC next-web REST ordering service",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "files - provides a list of files, extents - estimate of total file size to download, or data - makes a request to process data for download",
+            "required": true,
+            "type": "string",
+            "default": "files",
+            "enum": ["files", "extents", "data"]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "1999-01-01T00:00:00"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "1999-01-02T05:00:00"
+          },
+          {
+            "name": "satellite",
+            "in": "query",
+            "description": "Case sensitive ID, e.g. F12 or F13, etc.",
+            "required": false,
+            "type": "string",
+            "default": "F13"
+          },
+          {
+            "name": "longitude",
+            "in": "query",
+            "description": "A point of desired coverage",
+            "required": false,
+            "type": "number",
+            "default": "0",
+            "maximum": 180.0,
+            "exclusiveMaximum": true,
+            "minimum": -180.0,
+            "exclusiveMinimum": true
+          },
+          {
+            "name": "latitude",
+            "in": "query",
+            "description": "A point of desired coverage",
+            "required": false,
+            "type": "number",
+            "default": "-10",
+            "maximum": 90.0,
+            "exclusiveMaximum": true,
+            "minimum": -90.0,
+            "exclusiveMinimum": true
+          }
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/version": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of service",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this service)",
+        "operationId": "getVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/wssversion": {
+      "get": {
+        "tags": [
+          "Service Information"
+        ],
+        "summary": "Get version of WebServiceShell",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this WebServiceShell (WSS))",
+        "operationId": "getWssVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "TBD_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://TBD/api/oauth/dialog",
+      "flow": "implicit"
+    }
+  }
+}
