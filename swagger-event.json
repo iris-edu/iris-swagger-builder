@@ -2,8 +2,8 @@
   "swagger": "2.0",
   "info": {
     "version": "1.0.0",
-    "title": "FDSN Web Services",
-    "description": "FDSN web services",
+    "title": "FDSN Event Web Service",
+    "description": "The fdsnws-event web service returns event (earthquake) information from the catalogs submitted to the IRIS DMC.",
     "termsOfService": "TBD",
     "contact": {
       "name": "geows@iris.washington.edu"
@@ -22,10 +22,10 @@
     "/query": {
       "get": {
         "tags": [
-          "GeoWS Water Level Tides"
+          "Event Query"
         ],
-        "summary": "Event query",
-        "description": "The fdsnws-event web service returns event (earthquake) information from the catalogs submitted to the IRIS DMC.",
+        "summary": "Query",
+        "description": "query",
         "operationId": "query",
         "produces": [
           "text/plain"
@@ -74,9 +74,46 @@
             "enum": ["MB", "ML", "MS", "MW"]
           },
           {
+            "name": "catalog",
+            "in": "query",
+            "description": "Catalog listing the event.",
+            "required": false,
+            "type": "string",
+            "enum": ["ISC", "ANF", "GCMT", "NEIC PDE"]
+          },
+          {
+            "name": "contributor",
+            "in": "query",
+            "description": "Group contributing the event.",
+            "required": false,
+            "type": "string",
+            "enum": ["ISC", "ANF", "GCMT", "NEIC ALERT", "NEIC COMCAT", "NEIC PDE-M", "NEIC PDE-Q", "NEIC PDE-W"]
+          },
+          {
+            "name": "includeallorigins",
+            "in": "query",
+            "description": "List all contributed event origins; otherwise, choose only the origin from the preferred contributor.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includeallmagnitudes",
+            "in": "query",
+            "description": "List all contributed magnitudes; otherwise, choose only the magnitude from the preferred contributor.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
+            "name": "includearrivals",
+            "in": "query",
+            "description": "Include phase picks for events, if they exist.",
+            "required": false,
+            "type": "boolean"
+          },
+          {
             "name": "minlon",
             "in": "query",
-            "description": "western limit",
+            "description": "Western limit of bounding box.",
             "required": false,
             "type": "number",
             "maximum": 180.0,
@@ -85,7 +122,7 @@
           {
             "name": "maxlon",
             "in": "query",
-            "description": "eastern limit",
+            "description": "Eastern limit of bounding box.",
             "required": false,
             "type": "number",
             "maximum": 180.0,
@@ -94,7 +131,7 @@
           {
             "name": "minlat",
             "in": "query",
-            "description": "southern limit",
+            "description": "Southern limit of bounding box.",
             "required": false,
             "type": "number",
             "maximum": 90.0,
@@ -103,7 +140,7 @@
           {
             "name": "maxlat",
             "in": "query",
-            "description": "northern limit",
+            "description": "Northern limit of bounding box.",
             "required": false,
             "type": "number",
             "maximum": 90.0,
@@ -112,7 +149,7 @@
           {
             "name": "lat",
             "in": "query",
-            "description": "Latitude",
+            "description": "Latitude of bounding circle.",
             "required": false,
             "type": "number",
             "default": 40,
@@ -122,7 +159,7 @@
           {
             "name": "lon",
             "in": "query",
-            "description": "Longitude",
+            "description": "Longitude of bounding circle.",
             "required": false,
             "type": "number",
             "default": -100,
@@ -132,7 +169,7 @@
           {
             "name": "minradius",
             "in": "query",
-            "description": "Minimum radius",
+            "description": "Minimum radius of bounding circle.",
             "required": false,
             "type": "number",
             "default": 0.0,
@@ -142,7 +179,7 @@
           {
             "name": "maxradius",
             "in": "query",
-            "description": "Maximum radius",
+            "description": "Maximum radius of bounding circle.",
             "required": false,
             "type": "number",
             "default": 30.0,
@@ -150,9 +187,23 @@
             "minimum": 0.0
           },
           {
+            "name": "mindepth",
+            "in": "query",
+            "description": "Minimum depth",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "maxdepth",
+            "in": "query",
+            "description": "Maximum depth",
+            "required": false,
+            "type": "number"
+          },
+          {
             "name": "orderby",
             "in": "query",
-            "description": "List all contributed event origins; otherwise, choose only the origin from the preferred contributor.",
+            "description": "Specify the sort order of the results.",
             "required": true,
             "type": "string",
             "enum": ["time", "time-asc", "magnitude", "magnitude-asc"]
@@ -160,7 +211,7 @@
           {
             "name": "format",
             "in": "query",
-            "description": "Format for returned data",
+            "description": "Format for returned data.",
             "required": true,
             "type": "string",
             "enum": ["xml", "text"]
@@ -171,6 +222,28 @@
             "description": "Limit the results to the specified number of events.",
             "required": false,
             "type": "number"
+          },
+          {
+            "name": "offset",
+            "in": "query",
+            "description": "Return results starting at the event count specified.",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "eventid",
+            "in": "query",
+            "description": "Get event by ID. Most other options are unavailable when an event ID is specified.",
+            "required": false,
+            "type": "number"
+          },
+          {
+            "name": "updatedafter",
+            "in": "query",
+            "description": "Return events updated since the given date.",
+            "required": false,
+            "type": "string",
+            "format": "date-time"
           }
         ],
         "responses": {

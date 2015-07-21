@@ -346,7 +346,17 @@ var Builder = (function($) {
                 self.parameter_names.push(param.name);
                 var paramObj = param.class;
                 if (!paramObj) {
-                    paramObj = new Parameter();
+                    if (param.type == "string") {
+                        if (param.format == "date") {
+                            paramObj = new DateParameter();
+                        }
+                        else if (param.format == "date-time") {
+                            paramObj = new DateTimeParameter();
+                        }
+                    }
+                    if (!paramObj) {
+                        paramObj = new Parameter();
+                    }
                 }
                 self.params[param.name] = paramObj;
                 paramObj.initialize(param);
