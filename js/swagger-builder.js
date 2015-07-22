@@ -101,16 +101,14 @@ var Builder = (function($) {
     Parameter.prototype.renderField = function(builder) {
         var self = this;
         var $widget = self.renderWidget(builder);
-        if (self.type != 'boolean') {
-            if (self.checkbox === true || (self.checkbox === null && !self.required)) {
-                var $wrapper = $('<div>');
-                var $checkbox = $('<input type="checkbox">').prop('id', self.id + '-check')
-                $wrapper.append(
-                    $checkbox,
-                    " ",
-                    $widget);
-                return $wrapper;
-            }
+        if (self.checkbox === true || (self.checkbox === null && self.enum && !self.required)) {
+            var $wrapper = $('<div>');
+            var $checkbox = $('<input type="checkbox">').prop('id', self.id + '-check')
+            $wrapper.append(
+                $checkbox,
+                " ",
+                $widget);
+            return $wrapper;
         }
         return $widget;
     };
@@ -185,11 +183,7 @@ var Builder = (function($) {
      * or a field name.
      */
     function Columns() {
-        var self = this;
-        self.columns = [];
-        $.each(arguments, function(_i, argument) {
-            self.columns.push(argument);
-        });
+        this.columns = Array.prototype.slice.call(arguments, 0)
     }
     IRIS.Extend(Columns, Renderable);
 
@@ -238,16 +232,59 @@ var Builder = (function($) {
             var $label = $('<label>').append(
                 $radio, " ", id
             );
-            var $subdiv = $('<div class="hide-if-inactive">').append(
+            var $subdiv = $('<div class="inactive hide-if-inactive">').append(
                 self.renderItems(builder, option.slice(1))
             );
             $div.append($("<div>").append($label), $subdiv);
             // Add dependency information to pass to the builder later
             builder.addBuilderAction(function() {
                     $subdiv.builder('dependsOn', $radio);
-                    $("input", $subdiv).builder('dependsOn', $subdiv);
+                    $("input, button", $subdiv).builder('dependsOn', $subdiv);
                     $radio.change();
             });
+        });
+        return $div;
+    };
+
+    /**
+     * Defines a lat/lon box coordinate picker
+     * Pass the constructor a list of n/s/e/w parameter names
+     */
+    function CoordinateBox() {
+        this.nsewInputs = Array.prototype.slice.call(arguments, 0);
+    }
+    IRIS.Extend(CoordinateBox, Renderable);
+    CoordinateBox.prototype.render = function(builder) {
+        var self = this;
+        var $div = $('<div class="coord_box">');
+        var $openBtn = $('<button type="button" class="btn btn-default">Use Map</button>');
+        $div.append($openBtn).append(self.renderItems(builder, self.nsewInputs));
+        $div.coordinate_picker({
+            nsewInputs: $('input[type=text]', $div),
+            drawingModes: 'rect',
+            openBtn: $openBtn
+        });
+        return $div;
+    };
+
+
+    /**
+     * Defines a lat/lon/radius coordinate picker
+     * Pass the constructor a list of lat/lon/radius parameter names
+     */
+    function CoordinateRadius() {
+        this.crInputs = Array.prototype.slice.call(arguments, 0);
+    }
+    IRIS.Extend(CoordinateRadius, Renderable);
+    CoordinateRadius.prototype.render = function(builder) {
+        var self = this;
+        var $div = $('<div class="coord_radius">');
+        var $openBtn = $('<button type="button" class="btn btn-default">Use Map</button>');
+        $div.append($openBtn).append(self.renderItems(builder, self.crInputs));
+        $div.coordinate_picker({
+            crInputs: $('input[type=text]', $div),
+            drawingModes: 'circle',
+            openBtn: $openBtn
         });
         return $div;
     };
@@ -414,6 +451,8 @@ var Builder = (function($) {
         DateTimeParameter: DateTimeParameter,
         Columns: Columns,
         OptGroup: OptGroup,
+        CoordinateBox: CoordinateBox,
+        CoordinateRadius: CoordinateRadius,
         Fieldset: Fieldset,
         Builder: Builder
     };

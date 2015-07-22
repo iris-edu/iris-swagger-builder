@@ -1,0 +1,38 @@
+.coordinate-picker-form-group label {
+  margin-bottom: 0;
+}
+.coordinate-picker-form-group button {
+  margin: 4px;
+}
+.qtip.coordinate-picker {
+  max-width: inherit;
+}
+.coordinate-picker-map {
+  border: 1px solid #ccc;
+  margin: 6px 0;
+}
+.coordinate-picker-form-group input.form-control {
+  width: 8em;
+  margin-left: auto;
+  margin-right: auto;
+}
+.coordinate-picker-form-group td {
+  text-align: center;
+  vertical-align: top;
+}
+.coordinate-picker-overlay {
+  position:absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  cursor: crosshair;
+  opacity: 0;
+  background: #fff;
+  /* IE8 filter */
+  filter: ~"alpha(opacity=0)";
+}
+.cursor-pos {
+  font-size: 11px;
+  padding: 0 6px;
+}

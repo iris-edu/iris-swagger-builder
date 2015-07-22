@@ -21,43 +21,49 @@ $(function() {
       magtype: {
         label: "Magnitude Type"
       },
+      catalog: {
+      },
+      contributor: {
+      },
+      includeallorigins: {
+          label: "Include All Origins"
+      },
+      includeallmagnitudes: {
+          label: "Include All Magnitudes"
+      },
+      includearrivals: {
+          label: "Include Arrivals"
+      },
       minlat: {
         label: "Min Lat",
-        checkbox: false
       },
       maxlat: {
-        label: "Max Lat",
-        checkbox: false
+        label: "Max Lat"
       },
       minlon: {
-        label: "Min Lon",
-        checkbox: false
+        label: "Min Lon"
       },
       maxlon: {
-        label: "Max Lon",
-        checkbox: false
+        label: "Max Lon"
       },
       lat: {
-          label: "Center Lat",
-          checkbox: false
+          label: "Center Lat"
       },
       lon: {
-          label: "Center Lon",
-          checkbox: false
+          label: "Center Lon"
       },
       minradius: {
-          label: "Min Radius",
-          checkbox: false
+          label: "Min Radius"
       },
       maxradius: {
-          label: "Max Radius",
-          checkbox: false
+          label: "Max Radius"
       },
       orderby: {
           label: "Order By"
       },
       eventid: {
-          label: "Event ID"
+          label: "Event ID",
+          checkbox: true
       },
       updatedafter: {
           label: "Updated After"
@@ -89,9 +95,12 @@ $(function() {
               '_location_type',
               ['All'],
               ['Lat/Lon Box',
-                  new Builder.Columns(["minlat"], ["maxlat"]),
-                  new Builder.Columns(["minlon"], ["maxlon"])],
-              ['Lat/Lon Radius', "lat", "lon", "minradius", "maxradius" ]
+                new Builder.CoordinateBox('maxlat', 'minlat', 'maxlon', 'minlon')
+              ],
+              ['Lat/Lon Radius',
+                new Builder.CoordinateRadius('lat', 'lon', 'maxradius'),
+                'minradius'
+              ]
             )
           )
         ]
