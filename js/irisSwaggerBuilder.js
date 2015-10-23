@@ -245,21 +245,27 @@
         var self = this;
         var $div = $('<div>')
         $.each(self.options, function(_i, option) {
+            // Add a radio button representing this option
             var $radio = $('<input type="radio">');
             var id = option[0];
             $radio.prop('name', self.name).prop('value', id);
             var $label = $('<label>').append(
                 $radio, " ", id
             );
+            // Add any child components
             var $subdiv = $('<div class="inactive hide-if-inactive">').append(
                 self.renderItems(builder, option.slice(1))
             );
             $div.append($("<div>").append($label), $subdiv);
-            // Add dependency information to pass to the builder later
-            builder.addBuilderAction(function() {
-                    $subdiv.builder('dependsOn', $radio);
-                    $("input, button", $subdiv).builder('dependsOn', $subdiv);
-                    $radio.change();
+            // Set up irisBuilder dependencies.  This requires the irisBuilder functionality to have
+            // run already, so it's done via a callback
+            builder.addPostInitCallback(function() {
+                // The div containing the child components depends on the radio being selected
+                $subdiv.irisBuilder('dependsOn', $radio);
+                // Any inputs within the subdiv depend on the subdiv
+                $("input, button", $subdiv).irisBuilder('dependsOn', $subdiv);
+                // Trigger the irisBuilder to act on the current state of the radio
+                $radio.change();
             });
         });
         return $div;
@@ -313,11 +319,13 @@
      */
     var DEFAULTS = {
         /* URL to retrieve Swagger definition from */
-        swaggerURL: 'swagger-rkgravitymag.json',
+        swaggerURL: 'example.json',
         /* Swagger path to generate a builder for */
         path: '/query',
         /* Method (eg. "get" or "post") to generate a builder for */
         method: 'get',
+        /* jQuery selector to get the form to work on */
+        form: 'form',
         /* Bootstrap form classes */
         labelClass: 'col-xs-2',
         fieldClass: 'col-xs-10',
@@ -338,6 +346,7 @@
         if (options) {
             $.extend(true, self.options, options);
         }
+        self.postInitCallbacks = [];
     };
 
     /* Main execution block for the Swagger Builder */
@@ -346,7 +355,7 @@
         // Connect to the page elements
         self.initDOM();
         // Run a chain of deferred steps, starting with an Ajax call to get the Swagger definition
-        // Return the chain, so the caller can say run().then(...)
+        // Return the chain, so the caller can say builder.run().then(...)
         return $.ajax(self.options.swaggerURL).then(
             function(data) {
                 self.data = data;
@@ -356,7 +365,7 @@
                     self.render();
                 }
                 catch(error) {
-                    console.log("Error: " + (error.stack || error));
+                    irisUtil.Log.error("Error: " + (error.stack || error));
                     return $.Deferred().reject(error);
                 }
             },
@@ -365,17 +374,22 @@
                 return error || status;
             }
         ).then(function() {
-            // At this point the DOM is built, so we can attach the irisBuilder functionality to it
+            // At this point the DOM is built, so we can initialize the irisBuilder on it
             try {
-                $("form#builder-form").irisBuilder(self.options);
+                $(self.options.form).irisBuilder(self.options);
             }
             catch(error) {
-                console.log("Error: " + (error.stack || error));
+                irisUtil.Log.error("Error: " + (error.stack || error));
                 return $.Deferred().reject(error);
             }
+        }).then(function() {
+            // Run any post-initialization callbacks added by individual components
+            $.each(self.postInitCallbacks, function(_i, callback) {
+                callback();
+            });
         }).then(
-            function() { console.log("Success"); },
-            function(error) { console.log("Failure: " + error); return error; }
+            function() { irisUtil.Log.debug("Success"); },
+            function(error) { irisUtil.Log.error("Failure: " + error); return error; }
         );
     };
 
@@ -500,6 +514,15 @@
             usage.push(paramObj.renderUsage(self));
         });
         return usage;
+    };
+
+    /**
+     * API for individual components to register functionality that will run after setup is
+     * complete.  For example,
+     */
+    Builder.prototype.addPostInitCallback = function(callback) {
+        var self = this;
+        self.postInitCallbacks.push(callback);
     };
 
     return {

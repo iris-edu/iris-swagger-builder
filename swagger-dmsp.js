@@ -8,6 +8,8 @@ $(function() {
         /* CSS classes for label and field divs, generally these will be Bootstrap grid classes */
         labelClass: "col-xs-3",
         fieldClass: "col-xs-9",
+        /* Show help text inline in the form rather than in a popup */
+        showHelpText: "inline",
         /* Parameter-level customizations */
         parameters: {
             /* Each parameter can be either a Parameter (or subclass) object, or a dictionary of Parameter options.

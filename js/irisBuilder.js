@@ -542,7 +542,7 @@
                 throw "Only one builder supported at a time";
             }
             options = options || {};
-            builder = new IrisBuilder(this, options);
+            irisBuilder = new IrisBuilder(this, options);
             this.data('IrisBuilder.irisBuilder', irisBuilder);
         }
         return this;
@@ -571,7 +571,6 @@
         return;
     }
     $.timepicker.setDefaults({
-        showTimepicker: false,
         showTime: false,
         showHour: false,
         showMinute: false,

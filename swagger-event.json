@@ -24,8 +24,8 @@
         "tags": [
           "Event Query"
         ],
-        "summary": "Query",
-        "description": "query",
+        "summary": "Event Query",
+        "description": "Query for event information",
         "operationId": "query",
         "produces": [
           "text/plain"

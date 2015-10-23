@@ -22,7 +22,7 @@
      */
     var Log = (function() {
         var _levels = ['error','warn','info','debug'];
-        var _level = 3; // Default level = warn
+        var _level = 1; // Default level = warn
         var _console = window.console;
         var _fns = [];
         if (_console) {

@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+  <head>
+      <title>Swagger builder demo</title>
+
+  <meta charset="utf-8">
+
+  <!-- Forces IE to render in 'latest' compatible mode -->
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+
+    <!-- START: EXTRA-JS -->
+  <script src="amd/require.js"></script>
+  <script src="amd/config.js"></script>
+  <script>
+requirejs(["amd/swagger-dmsp"]);
+  </script>
+
+  <!-- END: EXTRA-JS -->
+
+  <!-- START: EXTRA-CSS -->
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
+
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="css/irisBuilder.css">
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="calendar/jquery-ui-timepicker-addon.css">
+  <!-- END: EXTRA-CSS -->
+
+
+  </head>
+  <body>
+
+    <div class="container">
+      <h3 id="service-title"></h3>
+      <p id="service-description"></p>
+
+      <h1>
+        URL Builder:
+        <span id="operation-summary"></span>
+      </h1>
+
+      <div class="row p-margin">
+        <div class="col-xs-10">
+          <p id="operation-description"></p>
+        </div>
+        <div class="col-xs-2">
+          <a href="#dialog" role="button" class="btn btn-default" data-toggle="modal"><i class="glyphicon glyphicon-question-sign"></i> Usage</a>
+        </div>
+      </div>
+
+      <!-- {{{ START: FORM -->
+
+      <form id="builder-form"
+            action=""
+            method="get"
+            class="form-inline">
+      </form>
+
+      <!-- }}} END: FORM -->
+
+      <div class="alert alert-warning">
+        <strong>Click the link:</strong>
+        <p><a id="url" target="_blank"></a></p>
+      </div>
+
+      <div class="alert alert-info">
+        <h4>Output</h4>
+        <pre id="output"></pre>
+      </div>
+
+      <div id="dialog"
+           class="modal fade"
+           tabindex="-1"
+           role="dialog"
+           aria-labelledby="myModalLabel"
+           aria-hidden="true">
+        <!-- {{{ START: HELP -->
+        <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">x</button>
+            <h3 id="myModalLabel">Usage</h3>
+          </div>
+          <div class="modal-body">
+            <table class="table table-bordered table-striped table-condensed" id="usage-table">
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button class="btn btn-default" data-dismiss="modal" aria-hidden="true">Close</button>
+          </div>
+        </div>
+        </div>
+        <!-- }}} END: HELP  -->
+      </div>
+    </div>
+
+
+    <div id="footer">
+    </div><!-- #footer -->
+
+  </body>
+</html>

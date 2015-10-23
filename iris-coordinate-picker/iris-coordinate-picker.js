@@ -2,10 +2,10 @@
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define(['jquery', 'google'], factory);
+        define(['jquery', 'async!http://maps.google.com/maps/api/js?sensor=false', 'qtip2'], factory);
     } else {
         // Browser globals
-        factory(jQuery, google);
+        factory(jQuery);
     }
 }(this, function ($) {
 

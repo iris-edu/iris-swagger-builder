@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+  <head>
+      <title>Swagger builder demo</title>
+
+  <meta charset="utf-8">
+
+  <!-- Forces IE to render in 'latest' compatible mode -->
+  <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
+
+    <!-- START: EXTRA-JS -->
+  <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.js"></script>
+  <script type="text/javascript" src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript"
+          src="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.js">
+  </script>
+  <script type="text/javascript"
+          src="calendar/jquery-ui-timepicker-addon.js">
+  </script>
+  <script type="text/javascript"
+          src="js/irisUtil.js">
+  </script>
+  <script type="text/javascript"
+          src="js/irisBuilder.js">
+  </script>
+  <script type="text/javascript"
+          src="js/irisSwaggerBuilder.js">
+  </script>
+  <script type="text/javascript" src="swagger-dmsp.js"></script>
+
+  <!-- END: EXTRA-JS -->
+
+  <!-- START: EXTRA-CSS -->
+  <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+  <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
+
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="css/irisBuilder.css">
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="calendar/jquery-ui-timepicker-addon.css">
+  <!-- END: EXTRA-CSS -->
+
+
+  </head>
+  <body>
+
+    <div class="container">
+      <h3 id="service-title"></h3>
+      <p id="service-description"></p>
+
+      <h1>
+        URL Builder:
+        <span id="operation-summary"></span>
+      </h1>
+
+      <div class="row p-margin">
+        <div class="col-xs-12">
+          <p id="operation-description"></p>
+        </div>
+      </div>
+
+      <!-- {{{ START: FORM -->
+
+      <form id="builder-form"
+            action=""
+            method="get"
+            class="form-inline">
+      </form>
+
+      <!-- }}} END: FORM -->
+
+      <div class="alert alert-warning">
+        <strong>Click the link:</strong>
+        <p><a id="url" target="_blank"></a></p>
+      </div>
+
+      <div class="alert alert-info">
+        <h4>Output</h4>
+        <pre id="output"></pre>
+      </div>
+
+    </div>
+
+
+    <div id="footer">
+    </div><!-- #footer -->
+
+  </body>
+</html>

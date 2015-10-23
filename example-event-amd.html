@@ -9,28 +9,37 @@
   <meta http-equiv="X-UA-Compatible" content="IE=Edge"/>
 
     <!-- START: EXTRA-JS -->
-  <script data-main="amd/app" src="js/require.js"></script>
+  <script src="amd/require.js"></script>
+  <script src="amd/config.js"></script>
+  <script>
+requirejs(["amd/swagger-event"]);
+  </script>
+
+  <!-- END: EXTRA-JS -->
 
   <!-- END: EXTRA-JS -->
 
   <!-- START: EXTRA-CSS -->
   <link rel="stylesheet" type="text/css" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
-  <link rel="stylesheet" type="text/css" href="css/jquery-ui-1.9.2.custom.css" />
+  <link rel="stylesheet" type="text/css" href="//ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/themes/smoothness/jquery-ui.css" />
 
   <link type="text/css"
         rel="stylesheet"
         media="screen"
-        href="css/iris-url-builder.css">
-  <link type="text/css"
-        rel="stylesheet"
-        media="screen"
-        href="iris-coordinate-picker/iris-coordinate-picker.css">
+        href="css/irisBuilder.css">
   <link type="text/css"
         rel="stylesheet"
         media="screen"
         href="calendar/jquery-ui-timepicker-addon.css">
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="//cdn.jsdelivr.net/qtip2/2.2.1/jquery.qtip.min.css">
+  <link type="text/css"
+        rel="stylesheet"
+        media="screen"
+        href="iris-coordinate-picker/iris-coordinate-picker.css">
   <!-- END: EXTRA-CSS -->
-
 
   </head>
   <body>
