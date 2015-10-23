@@ -1,6 +1,13 @@
-/* globals jQuery, IRIS */
-
-var SwaggerFormBuilder = (function($, IRIS) {
+/* Boilerplate to define module using AMD with fallback to global variable */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['jquery', 'irisUtil', 'irisBuilder'], factory);
+    } else {
+        // Browser globals
+        root.irisSwaggerBuilder = factory(jQuery, irisUtil, irisBuilder);
+    }
+}(this, function ($, irisUtil, irisBuilder) {
 
     /**
      * Base class for any component that needs to render itself onto the page
@@ -38,7 +45,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
      * Base class for a query parameter which appears as a form input.
      */
     function Parameter(options) { this.options = options; }
-    IRIS.Extend(Parameter, Renderable);
+    irisUtil.Extend(Parameter, Renderable);
 
     // Options, these can be overridden by passing them in the constructor
     Parameter.prototype.inputSize = 20;
@@ -151,7 +158,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
      * A parameter representing a date
      */
     function DateParameter(options) { this.options = options; }
-    IRIS.Extend(DateParameter, Parameter);
+    irisUtil.Extend(DateParameter, Parameter);
 
     // Set/override some default options
     DateParameter.prototype.inputSize = 18;
@@ -184,7 +191,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
      * A parameter representing date + time
      */
     function DateTimeParameter(options) { this.options = options; }
-    IRIS.Extend(DateTimeParameter, DateParameter);
+    irisUtil.Extend(DateTimeParameter, DateParameter);
 
     // Set/override options
     DateTimeParameter.prototype.includeTime = true;
@@ -197,7 +204,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
     function Columns() {
         this.columns = Array.prototype.slice.call(arguments, 0)
     }
-    IRIS.Extend(Columns, Renderable);
+    irisUtil.Extend(Columns, Renderable);
 
     Columns.prototype.render = function(builder) {
         var self = this;
@@ -218,7 +225,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
         this.legend = legend;
         this.items = Array.prototype.slice.call(arguments, 1);
     }
-    IRIS.Extend(Fieldset, Renderable);
+    irisUtil.Extend(Fieldset, Renderable);
     Fieldset.prototype.render = function(builder) {
         var self = this;
         var $fieldset = $('<fieldset>').append($('<legend>').html(self.legend));
@@ -233,7 +240,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
         this.name = name;
         this.options = Array.prototype.slice.call(arguments, 1);
     }
-    IRIS.Extend(OptGroup, Renderable);
+    irisUtil.Extend(OptGroup, Renderable);
     OptGroup.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div>')
@@ -265,7 +272,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
     function CoordinateBox() {
         this.nsewInputs = Array.prototype.slice.call(arguments, 0);
     }
-    IRIS.Extend(CoordinateBox, Renderable);
+    irisUtil.Extend(CoordinateBox, Renderable);
     CoordinateBox.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div class="coord_box">');
@@ -287,7 +294,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
     function CoordinateRadius() {
         this.crInputs = Array.prototype.slice.call(arguments, 0);
     }
-    IRIS.Extend(CoordinateRadius, Renderable);
+    irisUtil.Extend(CoordinateRadius, Renderable);
     CoordinateRadius.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div class="coord_radius">');
@@ -323,7 +330,7 @@ var SwaggerFormBuilder = (function($, IRIS) {
      * @param options : a dictionary of options, supplementing/overriding DEFAULTS
      */
     function Builder(options) { this.initialize(options); }
-    IRIS.Extend(Builder, Renderable);
+    irisUtil.Extend(Builder, Renderable);
 
     Builder.prototype.initialize = function(options) {
         var self = this;
@@ -358,9 +365,9 @@ var SwaggerFormBuilder = (function($, IRIS) {
                 return error || status;
             }
         ).then(function() {
-            // At this point the DOM is built, so we can attach the URLBuilder functionality to it
+            // At this point the DOM is built, so we can attach the irisBuilder functionality to it
             try {
-                $("form#builder-form").urlBuilder(self.options);
+                $("form#builder-form").irisBuilder(self.options);
             }
             catch(error) {
                 console.log("Error: " + (error.stack || error));
@@ -507,6 +514,6 @@ var SwaggerFormBuilder = (function($, IRIS) {
         Builder: Builder
     };
 
-})(jQuery, IRIS);
+}));
 
 

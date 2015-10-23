@@ -1,24 +1,49 @@
-/* globals jQuery, IRIS */
-
 /**
- * Plugin for managing IRIS URL Builder forms.
+ * jQuery plugin for managing a Builder form.
+ *
+ * Most of the functionality is concerned with input dependencies -- an input may be
+ * enabled only when some other input has a particular state or value.
+ *
+ * As a simple example, many inputs have a checkbox next to them: if the checkbox isn't
+ * checked, the input will be disabled.
+ *
+ * Another example is radio-based input groups: each radio button in a group has associated
+ * inputs which are only enabled (or shown) when that radio is selected. For example, geographical
+ * coordinates can be entered as a lat/long bounding box or a center/radius. The form contains
+ * a radio with "box" and "radius" options. A set of four inputs (max/min lat and long) is dependent
+ * on the "box" option, and a separate set of three inputs (lat/long/radius) is dependent on the
+ * "radius" option.
+ *
+ * The other task of this library is to generate a clickable link (assumed to be a web service)
+ * encoding all the form parameters. This is the reason for the input enable/disable functionality --
+ * only enabled inputs are encoded into the form. This enables the form to ensure that invalid
+ * input combinations aren't submitted.
  *
  */
-(function($) {
+
+/* Boilerplate to define module using AMD with fallback to global variable */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['jquery', 'irisUtil'], factory);
+    } else {
+        // Browser globals
+        root.irisBuilder = factory(jQuery, irisUtil);
+    }
+}(this, function ($, irisUtil) {
 
     /**
-     * URLBuilder allows inputs to be tied to each other, respond to user
-     * input, and update a query url link.
+     * The main builder object
      * @param form : A form
-     * @param options : An object overriding any of the options in URLBuilder.prototype.defaults
+     * @param options : An object overriding any of the options in IrisBuilder.prototype.defaults
      */
-    var URLBuilder = function(form, options) {
+    var IrisBuilder = function(form, options) {
         this.$form = $(form);
         this.options = $.extend( {}, this.defaults, options );
         this._start();
     };
 
-    URLBuilder.prototype = {
+    IrisBuilder.prototype = {
 
         /**
          * Defaults
@@ -78,8 +103,8 @@
              * name starts with '_', which should be adequate for most purposes.
              *
              * The main reason this may be needed is for radio buttons.  Most unwanted inputs
-             * can be left unnamed, but radio button groups rely on a name, so they have to be
-             * actively filtered out of the query.
+             * can be left unnamed, but radio button groups rely on a name, so if they're not
+             * actually part of the query they have to be actively filtered out.
              */
             queryParamFilter: function(param) {
                 return param.name.charAt(0) !== '_' && param.value != '';
@@ -97,9 +122,9 @@
             this._initDefaultTriggers();
             this._initUrlLink();
             // Once everything is settled, trigger all elements to update
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             setTimeout(function() {
-                _urlBuilder._queueUpdate($("[id]", _urlBuilder.$form));
+                _irisBuilder._queueUpdate($("[id]", _irisBuilder.$form));
             });
         },
 
@@ -107,15 +132,15 @@
          * Find all the inputs in the form, and listen for any changes to them.
          */
         _initInputs: function() {
-            var _urlBuilder = this;
-            if ( _urlBuilder.options.inputs ) {
-                _urlBuilder.$inputs = $(_urlBuilder.options.inputs);
+            var _irisBuilder = this;
+            if ( _irisBuilder.options.inputs ) {
+                _irisBuilder.$inputs = $(_irisBuilder.options.inputs);
             } else {
-                _urlBuilder.$inputs = $(_urlBuilder.options.inputSelector, _urlBuilder.$form);
+                _irisBuilder.$inputs = $(_irisBuilder.options.inputSelector, _irisBuilder.$form);
             }
             // Watch for a wide range of events, and queue up the handler
-            _urlBuilder.$inputs.on("change propertychange keyup input paste URLBuilder.update changeDate", function() {
-                _urlBuilder._queueUpdate($(this));
+            _irisBuilder.$inputs.on("change propertychange keyup input paste IrisBuilder.update changeDate", function() {
+                _irisBuilder._queueUpdate($(this));
             });
         },
 
@@ -128,17 +153,17 @@
          * change, and trigger an update handler.
          */
         _checkState: function($elem) {
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             $elem.each(function() {
                 var $this = $(this);
-                var oldState = $this.data('URLBuilder.state');
-                var state = '' + _urlBuilder.getSetActive($this) + ':' + $this.val();
-                var elemUID = _urlBuilder._getElemUID($this);
-                IRIS.Debug.debug("State check for " + elemUID + ": '" + oldState + "' -> '" + state + "'");
+                var oldState = $this.data('IrisBuilder.state');
+                var state = '' + _irisBuilder.getSetActive($this) + ':' + $this.val();
+                var elemUID = _irisBuilder._getElemUID($this);
+                irisUtil.Log.debug("State check for " + elemUID + ": '" + oldState + "' -> '" + state + "'");
                 if (typeof(oldState) === 'undefined' || oldState != state) {
-                    IRIS.Debug.debug("Triggering update");
-                    $this.data('URLBuilder.state', state);
-                    $this.triggerHandler('URLBuilder.update');
+                    irisUtil.Log.debug("Triggering update");
+                    $this.data('IrisBuilder.state', state);
+                    $this.triggerHandler('IrisBuilder.update');
                 }
             });
         },
@@ -149,13 +174,14 @@
          * because not all elements have a real id.
          */
         _getElemUID: function($elem) {
-            var elemUID = $elem.data('URLBuilder.uid');
+            var elemUID = $elem.data('IrisBuilder.uid');
             if (!elemUID) {
                 elemUID = $elem.prop('id');
                 if (!elemUID) {
-                    elemUID = 'builder-uid-' + this._elemUID++;
+                    // Generate a UID incorporating a private counter
+                    elemUID = 'iris-builder-uid-' + this._elemUID++;
                 }
-                $elem.data('URLBuilder.uid', elemUID);
+                $elem.data('IrisBuilder.uid', elemUID);
             }
             return elemUID;
         },
@@ -164,46 +190,47 @@
          * Hook up related elements.  For example, if there's an input with
          * id="name" and a checkbox with id "name-check", the input will automatically
          * enable/disable itself according to the checkbox state.
-         * @see URLBuilder.defaults.relatedFieldSuffixes
+         * @see IrisBuilder.defaults.relatedFieldSuffixes
          */
         _initDefaultTriggers: function() {
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             // Resolve ids to "base" ids (eg. "input", "input-check", and "input-row" are all base "input")
             var base_ids = {};
-            $("[id]", _urlBuilder.$form).each(function() {
+            $("[id]", _irisBuilder.$form).each(function() {
                 var elem_id = $(this).prop("id");
                 // Base id is the actual id by default
                 var base_id = elem_id;
-                $.each(_urlBuilder.options.relatedFieldSuffixes, function(i, suffix) {
+                $.each(_irisBuilder.options.relatedFieldSuffixes, function(i, suffix) {
                     // If the id ends with the given suffix, the base id is the prefix
                     if (suffix !== "" && elem_id.slice(-suffix.length) === suffix) {
                         base_id = elem_id.slice(0,-suffix.length);
                     }
                 });
-                // If not already done, create dependencies among all the related containers
+                // Find all inputs with the given base id and apply the default dependency rules
+                // Mark the base id when finished so we don't repeat the process
                 if (!(base_id in base_ids)) {
                     base_ids[base_id] = 1;
-                    IRIS.Debug.debug("Connecting inputs for " + base_id);
+                    irisUtil.Log.debug("Connecting inputs for " + base_id);
                     // Iterate through the suffixes, making each depend on the previous one
                     var $child = null;
-                    $.each(_urlBuilder.options.relatedFieldSuffixes, function(i, suffix) {
+                    $.each(_irisBuilder.options.relatedFieldSuffixes, function(i, suffix) {
                         var $elem = $("#"+base_id+suffix);
                         if ($elem.length > 0) {
                             if ($child) {
-                                _urlBuilder.addDependsOn($child, $elem);
+                                _irisBuilder.addDependsOn($child, $elem);
                             }
                             $child = $elem;
                         }
                     });
                 }
             });
-            /* Make date input buttons depend on the input, so they enable/disable in sync */
+            /* Make jQuery-UI date input buttons depend on the input, so they enable/disable in sync */
             $('.ui-datepicker-trigger').each(function() {
                 var $dependency = $(this).prev('input');
                 if (!$dependency.length) {
                   $dependency = $(this).closest('.input-group');
                 }
-               _urlBuilder.addDependsOn($(this), $dependency);
+               _irisBuilder.addDependsOn($(this), $dependency);
             });
             /* Make like-named radio buttons all depend on each other */
             var radio_names = {};
@@ -211,7 +238,7 @@
               var name = $(this).prop('name');
               if (name && !radio_names[name]) {
                 radio_names[name] = true;
-                _urlBuilder.addUpdateOnChange(
+                _irisBuilder.addUpdateOnChange(
                   $('input:radio[name="'+name+'"]'),
                   $('input:radio[name="'+name+'"]'));
               }
@@ -223,8 +250,8 @@
          */
         _initUrlLink: function() {
             this.$urlLink = $(this.options.urlLinkSelector);
-            // If there's a target for the output, override the click() behavior to retrieve via
-            // AJAX and render the output to the target
+            // If there's a target selector for the output, override the click() behavior to
+            // retrieve via AJAX and render the output to the target
             if (this.options.targetSelector) {
                 var $target = $(this.options.targetSelector);
                 this.$urlLink.click(function() {
@@ -241,47 +268,60 @@
 
         /**
          * Queue an element for handling a potential update.
+         *
          * The goals of the queue are to
          * 1. Ensure that each update is only executed once (eg. prevent cycles), and
          * 2. Handle updates in the order they were generated
+         *
          * An alternative way of describing #2 is that we want to go through the
          * updates Breadth First rather than Depth First.  Suppose that B and C depend
          * on A, and D depends on B and C, eg.
          * A->(B,C), B->(D), C->(D)
+         *
          * If we handle dependencies Depth First, an update in A would spawn an update
          * in B and C.  So we evaluate B, which spawns an update in D.  Now we evaluate
          * D, but it's using a stale status for C!
-         * So instead we push B and C on to the queue, and evaluate them.  The update
-         * of D gets pushed on the end of the queue, so it's handled after C.
+         *
+         * So instead we push B and C on to the queue, and they are evaluated as we move
+         * down the queue.  When B spawns an update to D, that update gets pushed on the
+         * end of the queue, so it's handled after C.
+         *
+         * We also track the elements that have been evaluated in the current update cycle,
+         * and skip repeat evaluations.  So while both B and C will push D onto the queue,
+         * the second evaluation of D will see that D has already been evaluated and no-op.
+         *
+         * NOTE: Obviously this doesn't handle circular dependencies.  It's up to the form
+         * design to unwrap these.
+         *
          * @param $elem : selector for the element(s) that changed
          */
         _queueUpdate: function($elem) {
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             // Check whether an update is in process.  If not, start a new one.
-            if (!_urlBuilder._currentUpdate) {
-                _urlBuilder._currentUpdate = {
-                        timeout: setTimeout(function() { _urlBuilder._onUpdate(); }, 0),
+            if (!_irisBuilder._currentUpdate) {
+                _irisBuilder._currentUpdate = {
+                        timeout: setTimeout(function() { _irisBuilder._onUpdate(); }, 0),
                         updateMap: {},
                         updateList: []
                 };
-                IRIS.Debug.debug("Starting update " + _urlBuilder._currentUpdate.timeout);
+                irisUtil.Log.debug("Starting update " + _irisBuilder._currentUpdate.timeout);
             }
             // Add each element to the pending update
             if ($elem) {
-                var selector = $elem.selector ? $elem.selector : '#'+_urlBuilder._getElemUID($elem);
-                IRIS.Debug.debug("Examining " + selector);
+                var selector = $elem.selector ? $elem.selector : '#'+_irisBuilder._getElemUID($elem);
+                irisUtil.Log.debug("Examining " + selector);
                 // Look at each individual element, and add it to the queue unless it's
                 // already been handled in this update.
                 $elem.each(function() {
-                    var elemUID = _urlBuilder._getElemUID($(this));
+                    var elemUID = _irisBuilder._getElemUID($(this));
                     // Store element id as identifier, or make up a unique one
-                    if (elemUID in _urlBuilder._currentUpdate.updateMap) {
-                        IRIS.Debug.debug("Item #" + elemUID + " is already in the update");
+                    if (elemUID in _irisBuilder._currentUpdate.updateMap) {
+                        irisUtil.Log.debug("Item #" + elemUID + " is already in the update");
                     } else {
-                        IRIS.Debug.debug("Queuing #" + elemUID);
+                        irisUtil.Log.debug("Queuing #" + elemUID);
                         // Add element to the list of pending updates
-                        _urlBuilder._currentUpdate.updateList.push(this);
-                        _urlBuilder._currentUpdate.updateMap[elemUID] = this;
+                        _irisBuilder._currentUpdate.updateList.push(this);
+                        _irisBuilder._currentUpdate.updateMap[elemUID] = this;
                     }
                 });
             }
@@ -300,11 +340,11 @@
                     i++;
                     var $oneElem = $(update);
                     var elemUID = this._getElemUID($oneElem);
-                    IRIS.Debug.debug("Updating #" + elemUID );
+                    irisUtil.Log.debug("Updating #" + elemUID );
 
                     // Set the element's active flag based on any conditions
                     var active = true;
-                    var activeConditions = $oneElem.data('URLBuilder.active-conditions');
+                    var activeConditions = $oneElem.data('IrisBuilder.active-conditions');
                     if (activeConditions) {
                         $.each(activeConditions, function(i, fn) {
                             active = active && fn.call($oneElem);
@@ -313,7 +353,7 @@
                     this.getSetActive($oneElem, active);
 
                     // Run any update handlers
-                    var updateHandlers = $oneElem.data('URLBuilder.update-handlers');
+                    var updateHandlers = $oneElem.data('IrisBuilder.update-handlers');
                     if (updateHandlers) {
                         $.each(updateHandlers, function(i, fn) {
                             fn.call($oneElem);
@@ -331,7 +371,7 @@
         _onUpdateComplete: function() {
             var updateId = this._currentUpdate.timeout;
             var numElements = this._currentUpdate.updateList.length;
-            IRIS.Debug.debug("Finished update #" + updateId + " on " + numElements + " elements");
+            irisUtil.Log.debug("Finished update #" + updateId + " on " + numElements + " elements");
             this._currentUpdate = null;
             this._updateUrlLink();
         },
@@ -358,11 +398,11 @@
          * @param $src : the element(s) whose state triggers the update
          */
         addUpdateOnChange: function($elem, $src) {
-            var _urlBuilder = this;
-            // Add to the list of
-            $src.on("URLBuilder.update", function() {
-                IRIS.Debug.debug("Triggering update of " + $elem.selector + " from " + $src.selector);
-                _urlBuilder._queueUpdate($elem, this);
+            var _irisBuilder = this;
+            // Add an event handler that queues the dependent element when the source element changes
+            $src.on("IrisBuilder.update", function() {
+                irisUtil.Log.debug("Triggering update of " + $elem.selector + " from " + $src.selector);
+                _irisBuilder._queueUpdate($elem, this);
             });
             return $elem;
         },
@@ -376,7 +416,7 @@
          * Alternatively, the condition can be a function returning a boolean; returning
          * false will make the element inactive.
          *
-         * This can be called multiple times for an element; it will be deactivated
+         * This can be called multiple times for an element; the element will be deactivated
          * unless all conditions are satisfied.
          *
          * @param $elem
@@ -385,15 +425,15 @@
          *          elements mutually exclusive, for example.
          */
         addDependsOn: function($elem, condition, invert) {
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             // If condition isn't a function, treat it as a selector and create a
             // condition function that checks whether the selector is active
             if (typeof(condition) !== 'function') {
                 var $src = $(condition);
-                _urlBuilder.addUpdateOnChange($elem, $src);
+                _irisBuilder.addUpdateOnChange($elem, $src);
                 condition = function() {
-                    IRIS.Debug.debug($elem.selector + " is checking " + $src.selector);
-                    return _urlBuilder.getSetActive($src);
+                    irisUtil.Log.debug($elem.selector + " is checking " + $src.selector);
+                    return _irisBuilder.getSetActive($src);
                 };
             }
             // Invert the condition if necessary
@@ -405,9 +445,9 @@
             }
             // Add the condition to each element's data
             $elem.each(function() {
-                var conditions = $(this).data('URLBuilder.active-conditions') || [];
+                var conditions = $(this).data('IrisBuilder.active-conditions') || [];
                 conditions.push(condition);
-                $(this).data('URLBuilder.active-conditions', conditions);
+                $(this).data('IrisBuilder.active-conditions', conditions);
             });
             return $elem;
         },
@@ -421,9 +461,9 @@
          */
         addOnUpdate: function($elem, fn) {
             $elem.each(function() {
-                var updateHandlers = $(this).data('URLBuilder.update-handlers') || [];
+                var updateHandlers = $(this).data('IrisBuilder.update-handlers') || [];
                 updateHandlers.push(fn);
-                $(this).data('URLBuilder.update-handlers', updateHandlers);
+                $(this).data('IrisBuilder.update-handlers', updateHandlers);
             });
             return $elem;
         },
@@ -442,7 +482,7 @@
          * @param active : true/false to make active or not; if omitted, returns the active state
          */
         getSetActive: function($elem, active) {
-            var _urlBuilder = this;
+            var _irisBuilder = this;
             if (typeof(active) === 'undefined') {
                 return !($elem.is('.inactive, :disabled, :checkbox:not(:checked), :radio:not(:checked)'));
             } else {
@@ -453,69 +493,70 @@
                 // Set the property -- this is mostly for input elements
                 $elem.prop("disabled", !active);
                 // Check for state changes and trigger updates appropriately
-                _urlBuilder._checkState($elem);
+                _irisBuilder._checkState($elem);
             }
         }
     };
 
     // Single form per page for now
-    var urlBuilder;
+    var irisBuilder;
 
-    $.fn.urlBuilder = function(options) {
+    $.fn.irisBuilder = function(options) {
         if (typeof(options) === 'string') {
-            // Functions that can be called on form elements.  Most of these can
-            // be called with multiple additional arguments, which will each be
-            // applied.
-            if (!urlBuilder) {
+            // If the first argument to the plugin is a string, it's taken as a function, eg.
+            // $('#input1').irisBuilder('dependsOn', $('#input2'))
+            // will cause #input1 to be disabled unless #input2 is enabled
+            if (!irisBuilder) {
                 throw "No builder form has been created";
             }
             var i;
             if (options === 'updateOnChange') {
                 for (i=1; i<arguments.length; i++) {
-                    urlBuilder.addUpdateOnChange(this, arguments[i]);
+                    irisBuilder.addUpdateOnChange(this, arguments[i]);
                 }
                 return this;
             } else if (options === 'dependsOn') {
                 for (i=1; i<arguments.length; i++) {
-                    urlBuilder.addDependsOn(this, arguments[i]);
+                    irisBuilder.addDependsOn(this, arguments[i]);
                 }
                 return this;
             } else if (options === 'dependsOnNot') {
                 for (i=1; i<arguments.length; i++) {
-                    urlBuilder.addDependsOn(this, arguments[i], true);
+                    irisBuilder.addDependsOn(this, arguments[i], true);
                 }
                 return this;
             } else if (options === 'onUpdate') {
                 for (i=1; i<arguments.length; i++) {
-                    urlBuilder.addOnUpdate(this, arguments[i]);
+                    irisBuilder.addOnUpdate(this, arguments[i]);
                 }
                 return this;
             } else if (options === 'active') {
-                return urlBuilder.getSetActive(this, arguments[1]);
+                return irisBuilder.getSetActive(this, arguments[1]);
             } else {
-                throw "Unknown URL builder function " + options;
+                throw "Unknown builder function " + options;
             }
         } else {
-            // Main builder form; should be called first and just once per page.
-            if (urlBuilder) {
-                throw "Only one URL builder supported at a time";
+            // Call the plugin with a dictionary (or nothing) to set up a builder on the
+            // given element (assumed to be a form)
+            if (irisBuilder) {
+                throw "Only one builder supported at a time";
             }
             options = options || {};
-            builder = new URLBuilder(this, options);
-            this.data('URLBuilder.urlBuilder', urlBuilder);
+            builder = new IrisBuilder(this, options);
+            this.data('IrisBuilder.irisBuilder', irisBuilder);
         }
         return this;
     };
 
-    /* Date inputs */
+    /* Configure jQuery UI datepickers. This code might be better off somewhere else. */
 
-    IRIS.Debug.debug("Initializing datepickers");
+    irisUtil.Log.debug("Initializing datepickers");
     if (!$.datepicker) {
-        IRIS.Debug.debug("No datepicker plugin");
+        irisUtil.Log.debug("No datepicker plugin");
         return;
     }
     if (!$.timepicker) {
-        IRIS.Debug.debug("No timepicker plugin");
+        irisUtil.Log.debug("No timepicker plugin");
         return;
     }
     // JQueryUI datepicker
@@ -538,26 +579,4 @@
         separator: 'T'
     });
 
-})(jQuery);
-
-
-
-
-/* Popup dialog */
-/*
-$(function() {
- // Dialog
-    $('#dialog').dialog({
-        autoOpen: false,
-        width: 550,
-        height: 450,
-        postion: ['center', 'center']
-
-    });
-    // Dialog Link
-    $('#dialog_link').click(function(){
-        $('#dialog').dialog('open');
-        return false;
-    });
-});
-*/
+}));

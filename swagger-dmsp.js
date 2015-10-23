@@ -1,6 +1,6 @@
 $(function() {
     /* Define a builder based on a Swagger definition */
-    var swaggerFormBuilder = new SwaggerFormBuilder.Builder({
+    var swaggerBuilder = new irisSwaggerBuilder.Builder({
         /* URL of the Swagger JSON */
         swaggerURL: "swagger-dmsp.json",
         /* Path of service for builder */
@@ -12,10 +12,10 @@ $(function() {
         parameters: {
             /* Each parameter can be either a Parameter (or subclass) object, or a dictionary of Parameter options.
              * In other words, these are equivalent:
-             * paramname: new SwaggerFormBuilder.Parameter({option1: "one", option2: "two"})
+             * paramname: new irisSwaggerBuilder.Parameter({option1: "one", option2: "two"})
              * paramname: {option1: "one", option2: "two"}
              *
-             * For a complete set of options, see SwaggerFormBuilder.Parameter (or relevant subclass)
+             * For a complete set of options, see irisSwaggerBuilder.Parameter (or relevant subclass)
              * Common options:
              * `label`: Customize the display label, by default uses title-cased parameter name (eg. "Starttime")
              * `enumLabels`: For enum fields, customize the display labels for the enum options.
@@ -25,10 +25,10 @@ $(function() {
              *
              * You can also override values that are part of the Swagger JSON definition (eg. 'description')
              */
-            starttime: new SwaggerFormBuilder.DateTimeParameter({
+            starttime: new irisSwaggerBuilder.DateTimeParameter({
                 label: "Start Time"
             }),
-            endtime: new SwaggerFormBuilder.DateTimeParameter({
+            endtime: new irisSwaggerBuilder.DateTimeParameter({
                 label: "End Time",
             }),
             email: {
@@ -44,24 +44,24 @@ $(function() {
         },
         /* Define the form layout.  Each element of the layout can be one of:
          *  "parameter_name" : Render the given parameter input
-         *  SwaggerFormBuilder.Columns : Takes a set of sub-layouts, and renders each one as a column
-         *  SwaggerFormBuilder.Fieldset : Render a fieldset with the first argument as the legend, followed by one or more elements
+         *  irisSwaggerBuilder.Columns : Takes a set of sub-layouts, and renders each one as a column
+         *  irisSwaggerBuilder.Fieldset : Render a fieldset with the first argument as the legend, followed by one or more elements
          */
         layout: [
-            new SwaggerFormBuilder.Columns(
+            new irisSwaggerBuilder.Columns(
                 [
-                    new SwaggerFormBuilder.Fieldset("Date/Time", "starttime", "endtime")
+                    new irisSwaggerBuilder.Fieldset("Date/Time", "starttime", "endtime")
                 ],
                 [
-                    new SwaggerFormBuilder.Fieldset("Location", "latitude", "longitude")
+                    new irisSwaggerBuilder.Fieldset("Location", "latitude", "longitude")
                 ]
             ),
-            new SwaggerFormBuilder.Fieldset("Request", "email", "content", "satellite")
+            new irisSwaggerBuilder.Fieldset("Request", "email", "content", "satellite")
         ]
     });
-    swaggerFormBuilder.run().then(
+    swaggerBuilder.run().then(
         function() {
-            // Additional URLBuilder functions should be added here
+            // Additional irisBuilder functions should be added here
         },
         function(error) { alert(error); }
     );
