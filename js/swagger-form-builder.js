@@ -338,16 +338,9 @@ var SwaggerFormBuilder = (function($, IRIS) {
         var self = this;
         // Connect to the page elements
         self.initDOM();
-        // Initialization is a multi-step, partly asynchronous process, so use a Deferred to signal completion
-        self._done = $.Deferred();
-        self._done.then(
-            function() { console.log("Success"); },
-            function(error) { console.log("Failure: " + error); }
-        );
-        // What we actually expose/return is the promise
-        self.done = self._done.promise();
-        // Start by loading the Swagger JSON definition
-        var $ajax = $.ajax(self.options.swaggerURL).then(
+        // Run a chain of deferred steps, starting with an Ajax call to get the Swagger definition
+        // Return the chain, so the caller can say run().then(...)
+        return $.ajax(self.options.swaggerURL).then(
             function(data) {
                 self.data = data;
                 try {
@@ -357,24 +350,26 @@ var SwaggerFormBuilder = (function($, IRIS) {
                 }
                 catch(error) {
                     console.log("Error: " + (error.stack || error));
-                    return $.Deferred().reject(error.message);
+                    return $.Deferred().reject(error);
                 }
             },
             function(jqXHR, status, error) {
-                // Return a single error value, so that Ajax errors can be handled like any other erro
+                // Return a single error value, so that Ajax errors can be handled like any other error
                 return error || status;
             }
         ).then(function() {
             // At this point the DOM is built, so we can attach the URLBuilder functionality to it
-            $("form#builder-form").urlBuilder(self.options);
+            try {
+                $("form#builder-form").urlBuilder(self.options);
+            }
+            catch(error) {
+                console.log("Error: " + (error.stack || error));
+                return $.Deferred().reject(error);
+            }
         }).then(
-            // Resolve our Deferred to indicate the result
-            self._done.resolve,
-            self._done.reject,
-            self._done.notify
+            function() { console.log("Success"); },
+            function(error) { console.log("Failure: " + error); return error; }
         );
-        // Return the promise so the caller can say run().then(...)
-        return self.done;
     };
 
     /**
@@ -393,13 +388,11 @@ var SwaggerFormBuilder = (function($, IRIS) {
         // Extract the operation-level definition and parse that separately
         var pathData = data.paths[self.options.path]
         if (!pathData) {
-            IRIS.Debug.error("Invalid service path given: " + self.options.path);
-            return;
+            throw "Invalid service path given: " + self.options.path;
         }
         self.operation = pathData[self.options.method];
         if (!self.operation) {
-            IRIS.Debug.error("Method " + self.options.method + " is not defined for " + self.options.path);
-            return;
+            throw "Method " + self.options.method + " is not defined for " + self.options.path;
         }
         self.parseSwaggerOperation(self.operation);
     };

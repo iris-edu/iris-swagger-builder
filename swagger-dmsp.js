@@ -10,14 +10,20 @@ $(function() {
         fieldClass: "col-xs-9",
         /* Parameter-level customizations */
         parameters: {
-            /* Available customizations:
-             * `class`: Use a custom class that can control all aspects of how the parameter input is displayed.
-             *          Currently can be SwaggerFormBuilder.DateParameter or SwaggerFormBuilder.DateTimeParameter.  More to come.
+            /* Each parameter can be either a Parameter (or subclass) object, or a dictionary of Parameter options.
+             * In other words, these are equivalent:
+             * paramname: new SwaggerFormBuilder.Parameter({option1: "one", option2: "two"})
+             * paramname: {option1: "one", option2: "two"}
+             *
+             * For a complete set of options, see SwaggerFormBuilder.Parameter (or relevant subclass)
+             * Common options:
              * `label`: Customize the display label, by default uses title-cased parameter name (eg. "Starttime")
              * `enumLabels`: For enum fields, customize the display labels for the enum options.
              * `checkbox`: Set true or false to force/suppress a checkbox next to the parameter.  By default,
              *          checkbox is shown for optional enum parameters only.
              * `inputSize`: For text-based inputs, set the input size.  Default is 20.
+             *
+             * You can also override values that are part of the Swagger JSON definition (eg. 'description')
              */
             starttime: new SwaggerFormBuilder.DateTimeParameter({
                 label: "Start Time"
@@ -53,7 +59,10 @@ $(function() {
             new SwaggerFormBuilder.Fieldset("Request", "email", "content", "satellite")
         ]
     });
-    swaggerFormBuilder.run().then(function() {
-        // Additional URLBuilder functions should be added here
-    });
+    swaggerFormBuilder.run().then(
+        function() {
+            // Additional URLBuilder functions should be added here
+        },
+        function(error) { alert(error); }
+    );
 });
