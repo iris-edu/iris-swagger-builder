@@ -1,12 +1,13 @@
-(function($, google, window) {
-    'use strict';
-
-    if (window.LOG === undefined) {
-      window.LOG = {
-        LOG: function(msg) { console.log(msg); }
-      };
+/* Boilerplate to define module using AMD with fallback to global variable */
+(function (root, factory) {
+    if (typeof define === 'function' && define.amd) {
+        // AMD. Register as an anonymous module.
+        define(['jquery', 'google'], factory);
+    } else {
+        // Browser globals
+        factory(jQuery, google);
     }
-    var LOG = window.LOG;
+}(this, function ($) {
 
     /* Conversion factor from degrees to meters */
     var DEG_TO_M = (2 * Math.PI * 6378137) / 360;
@@ -89,7 +90,6 @@
           this.$inputCenterLat = $(this.options.crInputs[0] || $('input[name*=center_lat]', this.$root));
           this.$inputCenterLon = $(this.options.crInputs[1] || $('input[name*=center_lon]', this.$root));
           this.$inputMaxRadius = $(this.options.crInputs[2] || $('input[name*=max_radius]', this.$root));
-          this.$inputMinRadius = $(this.options.crInputs[3] || $('input[name*=min_radius]', this.$root));
         }
     };
     /* Set up the picker dialog */
@@ -149,7 +149,7 @@
     /* Put the picker into the given drawing mode */
     Picker.prototype.setDrawingMode = function(mode) {
         if (!this.hasDrawingMode(mode)) {
-            LOG("Bad drawing mode! " + mode);
+            throw "Bad drawing mode! " + mode;
             return;
         }
         this.drawingMode = mode;
@@ -283,7 +283,6 @@
       var centerLat = parseFloat(this.$inputCenterLat.val());
       var centerLon = parseFloat(this.$inputCenterLon.val());
       var maxRadius = parseFloat(this.$inputMaxRadius.val());
-      var minRadius = parseFloat(this.$inputMinRadius.val());
       // Skip if no/invalid coordinates
       if (isNaN(centerLat) || isNaN(centerLon) || isNaN(maxRadius)) {
           return;
@@ -490,4 +489,4 @@
         return this;
     };
 
-})(jQuery, google, window);
+}));

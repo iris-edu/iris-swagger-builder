@@ -25,7 +25,7 @@
 (function (root, factory) {
     if (typeof define === 'function' && define.amd) {
         // AMD. Register as an anonymous module.
-        define(['jquery', 'irisUtil'], factory);
+        define(['jquery', 'irisUtil', 'jquery-ui', 'calendar/jquery-ui-timepicker-addon'], factory);
     } else {
         // Browser globals
         root.irisBuilder = factory(jQuery, irisUtil);
@@ -552,11 +552,7 @@
 
     irisUtil.Log.debug("Initializing datepickers");
     if (!$.datepicker) {
-        irisUtil.Log.debug("No datepicker plugin");
-        return;
-    }
-    if (!$.timepicker) {
-        irisUtil.Log.debug("No timepicker plugin");
+        irisUtil.Log.error("No datepicker plugin");
         return;
     }
     // JQueryUI datepicker
@@ -570,7 +566,12 @@
         buttonText: 'Click to browse a calendar',
         constrainInput: true
     });
+    if (!$.timepicker) {
+        irisUtil.Log.error("No timepicker plugin");
+        return;
+    }
     $.timepicker.setDefaults({
+        showTimepicker: false,
         showTime: false,
         showHour: false,
         showMinute: false,

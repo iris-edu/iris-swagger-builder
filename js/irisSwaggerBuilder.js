@@ -5,9 +5,9 @@
         define(['jquery', 'irisUtil', 'irisBuilder'], factory);
     } else {
         // Browser globals
-        root.irisSwaggerBuilder = factory(jQuery, irisUtil, irisBuilder);
+        root.irisSwaggerBuilder = factory(jQuery, irisUtil);
     }
-}(this, function ($, irisUtil, irisBuilder) {
+}(this, function ($, irisUtil) {
 
     /**
      * Base class for any component that needs to render itself onto the page
