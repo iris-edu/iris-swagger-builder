@@ -3,29 +3,30 @@
   "info": {
     "version": "1.0.0",
     "title": "GeoWS UnFunded INTERMAGNET",
-    "description": "Demonstration of accessing INTERMAGNET services using GeoWS technology. For more information about INTERMAGNET, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a>",
+    "description": "A demonstration service showing access to INTERMAGNET data via a GeoWS style web service.",
     "termsOfService": "TBD",
     "contact": {
-      "name": "geows@iris.washington.edu"
+      "name": "GeoWS Building Block",
+      "email": "geows@iris.washington.edu"
     },
     "license": {
-      "name": "GNU Lesser General Public License",
+      "name": "Data provided under GNU Lesser General Public License",
       "url": "http://www.gnu.org/licenses/"
     }
   },
   "host": "geows.ds.iris.edu",
-  "basePath": "/geows-uf/intermagnet/1",
+  "basePath": "/geows-uf",
   "schemes": [
     "http"
   ],
   "paths": {
-    "/query": {
+    "/intermagnet/1/query": {
       "get": {
         "tags": [
-          "GeoWS INTERMAGNET"
+          "INTERMAGNET"
         ],
         "summary": "Get INTERMAGNET data",
-        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data via a GeoWS style web service.</p><p>For more information about INTERMAGNET and data definition, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a></p><p>The <strong>email</strong> and <strong>accept</strong> parameters are required to indicate acceptance of conditions of use.</p><p>Additionally, <strong>observatories</strong> parameter is added to enable query by one or more observatories.</p><p>When content type of <strong>data</strong> is specified, this service submits requests in batches and polls for up to 10 times on 10 second intervals.</p>",
         "operationId": "getData",
         "produces": [
           "text/plain"
@@ -50,13 +51,25 @@
           {
             "name": "content",
             "in": "query",
-            "description": "files or data, files - list of available files, data - text version of magnetic data",
+            "description": "<strong>files</strong> - list of available files, <strong>data</strong> - text version of magnetic data",
             "required": false,
             "type": "string",
             "default": "files",
             "enum": [
               "files",
               "data"
+            ]
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "<strong>text</strong> - data is in GeoWS well structured text form, <strong>IAGA2002</strong> - output is structured in INTERMAGNET format <a href='http://www.ngdc.noaa.gov/IAGA/vdat/iagaformat.html'>IAGA2002</a",
+            "required": false,
+            "type": "string",
+            "default": "text",
+            "enum": [
+              "text",
+              "IAGA2002"
             ]
           },
           {
@@ -110,7 +123,7 @@
           {
             "name": "rate",
             "in": "query",
-            "description": "minute or second",
+            "description": "The interval between data entries.",
             "required": true,
             "type": "string",
             "default": "minute",
@@ -121,8 +134,23 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request, and error messages releated to client interaction with WebServiceShell"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error, and error messages related to handler operation or WebServiceShell configuration"
           }
         },
         "security": [
@@ -136,10 +164,10 @@
       },
       "head": {
         "tags": [
-          "GeoWS INTERMAGNET"
+          "INTERMAGNET"
         ],
         "summary": "Get INTERMAGNET data",
-        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data via a GeoWS style web service.</p><p>For more information about INTERMAGNET and data definition, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a></p><p>The <strong>email</strong> and <strong>accept</strong> parameters are required to indicate acceptance of conditions of use.</p><p>Additionally, <strong>observatories</strong> parameter is added to enable query by one or more observatories.</p><p>When content type of <strong>data</strong> is specified, this service submits requests in batches and polls for up to 10 times on 10 second intervals.</p>",
         "operationId": "getData",
         "produces": [
           "text/plain"
@@ -164,13 +192,25 @@
           {
             "name": "content",
             "in": "query",
-            "description": "files or data, files - list of available files, data - text version of magnetic data",
+            "description": "<strong>files</strong> - list of available files, <strong>data</strong> - text version of magnetic data",
             "required": false,
             "type": "string",
             "default": "files",
             "enum": [
               "files",
               "data"
+            ]
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "<strong>text</strong> - data is in GeoWS well structured text form, <strong>IAGA2002</strong> - output is structured in INTERMAGNET format <a href='http://www.ngdc.noaa.gov/IAGA/vdat/iagaformat.html'>IAGA2002</a",
+            "required": false,
+            "type": "string",
+            "default": "text",
+            "enum": [
+              "text",
+              "IAGA2002"
             ]
           },
           {
@@ -211,7 +251,7 @@
             "description": "Comma separated list, e.g. ASC,BOU,VIC  - empty list selects all.",
             "required": false,
             "type": "string",
-            "default": ""
+            "default": "AAA,BEL,CKI,DED,EBR,FCC,GAN"
           },
           {
             "name": "type",
@@ -224,7 +264,7 @@
           {
             "name": "rate",
             "in": "query",
-            "description": "minute or second",
+            "description": "The interval between data entries.",
             "required": true,
             "type": "string",
             "default": "minute",
@@ -235,8 +275,23 @@
           }
         ],
         "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request, and error messages releated to client interaction with WebServiceShell"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          },
           "500": {
-            "description": "Internal Server Error"
+            "description": "Internal Server Error, and error messages related to handler operation or WebServiceShell configuration"
           }
         },
         "security": [
@@ -249,10 +304,10 @@
         ]
       }
     },
-    "/version": {
+    "/intermagnet/1/version": {
       "get": {
         "tags": [
-          "Service Information"
+          "INTERMAGNET"
         ],
         "summary": "Get version of service",
         "description": "<p>The <strong>wssversion</strong> service provides the version number of this service)",
@@ -261,6 +316,12 @@
           "text/plain"
         ],
         "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "406": {
+            "description": "Not Acceptable - look at Accept headers, WebServiceShell only returns text/plain here"
+          },
           "500": {
             "description": "Internal Server Error"
           }
@@ -275,10 +336,10 @@
         ]
       }
     },
-    "/wssversion": {
+    "/intermagnet/1/wssversion": {
       "get": {
         "tags": [
-          "Service Information"
+          "INTERMAGNET"
         ],
         "summary": "Get version of WebServiceShell",
         "description": "<p>The <strong>wssversion</strong> service provides the version number of this WebServiceShell (WSS))",
@@ -287,6 +348,12 @@
           "text/plain"
         ],
         "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "406": {
+            "description": "Not Acceptable - look at Accept headers, WebServiceShell only returns text/plain here"
+          },
           "500": {
             "description": "Internal Server Error"
           }

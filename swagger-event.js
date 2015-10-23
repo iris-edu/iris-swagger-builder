@@ -1,6 +1,6 @@
-var swaggerBuilder;
+var swaggerFormBuilder;
 $(function() {
-  swaggerBuilder = new Builder.Builder({
+  swaggerFormBuilder = new SwaggerFormBuilder.Builder({
     swaggerURL: "swagger-event.json",
     labelClass: "col-xs-4",
     fieldClass: "col-xs-8",
@@ -69,14 +69,14 @@ $(function() {
           label: "Updated After"
       },
       format: {
-        enum_labels: {
+        enumLabels: {
           xml: "XML (QuakeML)",
           text: "Text (CSV)"
         }
       }
     },
     layout: [
-      new Builder.Columns(
+      new SwaggerFormBuilder.Columns(
         [
           "starttime", "endtime",
           "minmag", "maxmag", "magtype",
@@ -85,20 +85,20 @@ $(function() {
           "includeallorigins", "includeallmagnitudes", "includearrivals",
           "orderby", "format",
           "limit", "offset",
-          new Builder.Fieldset("Advanced search",
+          new SwaggerFormBuilder.Fieldset("Advanced search",
               "eventid", "updatedafter"
           )
         ],
         [
-          new Builder.Fieldset("Location",
-            new Builder.OptGroup(
+          new SwaggerFormBuilder.Fieldset("Location",
+            new SwaggerFormBuilder.OptGroup(
               '_location_type',
               ['All'],
               ['Lat/Lon Box',
-                new Builder.CoordinateBox('maxlat', 'minlat', 'maxlon', 'minlon')
+                new SwaggerFormBuilder.CoordinateBox('maxlat', 'minlat', 'maxlon', 'minlon')
               ],
               ['Lat/Lon Radius',
-                new Builder.CoordinateRadius('lat', 'lon', 'maxradius'),
+                new SwaggerFormBuilder.CoordinateRadius('lat', 'lon', 'maxradius'),
                 'minradius'
               ]
             )
@@ -107,15 +107,15 @@ $(function() {
       )
     ]
   });
-  swaggerBuilder.run().then(function() {
-      // Builder functions
+  swaggerFormBuilder.run().then(function() {
+      // URLBuilder functions
 
       // Disable all query-oriented rows if the event id control is enabled
       $('div[id$="-row"]')
           .not('#includeallorigins-row, #includeallmagnitudes-row, #includearrivals-row, #eventid-row, #format-row')
-          .builder('dependsOnNot', $("#eventid-check"));
+          .urlBuilder('dependsOnNot', $("#eventid-check"));
       // Uncheck location radios if an event id is chosen
       $('input:radio[name="_location_type"]')
-          .builder('dependsOnNot', $("#eventid-check"));
+          .urlBuilder('dependsOnNot', $("#eventid-check"));
   });
 });

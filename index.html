@@ -23,17 +23,16 @@
           src="js/iris-utils.js">
   </script>
   <script type="text/javascript"
-          src="js/builder.js">
+          src="js/iris-url-builder.js">
   </script>
   <script type="text/javascript"
-          src="js/swagger-builder.js">
+          src="js/swagger-form-builder.js">
   </script>
   <script type="text/javascript"
-          src="js/validator.js">
+          src="iris-coordinate-picker/iris-coordinate-picker.js">
   </script>
-  <script type="text/javascript"
-          src="coordinate_picker/coordinate_picker.js">
-  </script>
+  <script type="text/javascript" src="swagger-dmsp.js"></script>
+
   <!-- END: EXTRA-JS -->
 
   <!-- START: EXTRA-CSS -->
@@ -43,11 +42,11 @@
   <link type="text/css"
         rel="stylesheet"
         media="screen"
-        href="css/builder.css">
+        href="css/iris-url-builder.css">
   <link type="text/css"
         rel="stylesheet"
         media="screen"
-        href="coordinate_picker/coordinate_picker.css">
+        href="iris-coordinate-picker/iris-coordinate-picker.css">
   <link type="text/css"
         rel="stylesheet"
         media="screen"
@@ -59,14 +58,17 @@
   <body>
 
     <div class="container">
+      <h3 id="service-title"></h3>
+      <p id="service-description"></p>
+
       <h1>
         URL Builder:
-        <span id="service-title"></span>
+        <span id="operation-summary"></span>
       </h1>
 
       <div class="row p-margin">
         <div class="col-xs-10">
-          <p id="service-description"></p>
+          <p id="operation-description"></p>
         </div>
         <div class="col-xs-2">
           <a href="#dialog" role="button" class="btn btn-default" data-toggle="modal"><i class="glyphicon glyphicon-question-sign"></i> Usage</a>
@@ -117,8 +119,6 @@
         </div>
         <!-- }}} END: HELP  -->
       </div>
-
-      <script type="text/javascript" src="swagger-event.js"></script>
     </div>
 
 

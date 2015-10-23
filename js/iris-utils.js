@@ -6,8 +6,8 @@ if (!IRIS) {
 
   /**
    * Simple logging object, supporting log levels
-   * @example Debug.setLevel('debug')
-   * @example Debug.warn("Watch out!")
+   * @example IRIS.Debug.setLevel('debug')
+   * @example IRIS.Debug.warn("Watch out!")
    */
   IRIS.Debug = (function() {
     var _levels = ['error','warn','info','debug'];
@@ -57,10 +57,10 @@ if (!IRIS) {
       }
     };
   })();
-  // Debug.setLevel('warn');
+  // IRIS.Debug.setLevel('warn');
 
   /**
-   * Basic object inheritance
+   * Basic object inheritance, based on CoffeeScript
    */
   IRIS.Extend = function(child, parent) {
     var __hasProp = {}.hasOwnProperty;

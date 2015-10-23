@@ -14,6 +14,15 @@
 #builder-form input.checkbox {
   margin-top: 6px;
 }
+
+/* Default labels are regular weight, required labels are bold */
+label {
+  font-weight: normal;
+}
+label.requiredField {
+  font-weight: bold;
+}
+
 /*
 #builder-form label.checkbox, #builder-form label.radio {
   margin-top: 0;

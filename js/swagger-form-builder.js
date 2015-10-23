@@ -1,7 +1,6 @@
 /* globals jQuery, IRIS */
 
-
-var Builder = (function($) {
+var SwaggerFormBuilder = (function($, IRIS) {
 
     /**
      * Base class for any component that needs to render itself onto the page
@@ -38,17 +37,22 @@ var Builder = (function($) {
     /**
      * Base class for a query parameter which appears as a form input.
      */
-    function Parameter() {}
+    function Parameter(options) { this.options = options; }
     IRIS.Extend(Parameter, Renderable);
 
-    // Options, these can be overridden by specifying them in the builder definition
-    Parameter.prototype.inputSize = 10;
+    // Options, these can be overridden by passing them in the constructor
+    Parameter.prototype.inputSize = 20;
     Parameter.prototype.checkbox = null;
 
-    Parameter.prototype.initialize = function(paramDefinition) {
+    Parameter.prototype.setSwaggerDefinition = function(swaggerDefinition) {
+        // Options come from (in order of precedence)
+        // 1. this.options (passed into constructor)
+        // 2. swaggerDefinition (come from Swagger JSON)
+        // 3. prototype attributes (already set on the object)
         var self = this;
-        $.extend(true, self, paramDefinition);
-        self.id = self.name;
+        $.extend(true, self, swaggerDefinition, self.options);
+        // Default the form id to the parameter name
+        self.id = self.id || self.name;
     };
 
     /* Return the parameter label */
@@ -64,10 +68,10 @@ var Builder = (function($) {
     /* Return the label for the given enum value */
     Parameter.prototype.getEnumLabel = function(value) {
         var self = this;
-        if (!self.enum_labels) {
+        if (!self.enumLabels) {
             return value;
         }
-        return self.enum_labels[value] || value;
+        return self.enumLabels[value] || value;
     };
 
     /* Render a row in the usage popup */
@@ -148,8 +152,11 @@ var Builder = (function($) {
      */
     function DateParameter(options) { this.options = options; }
     IRIS.Extend(DateParameter, Parameter);
+
+    // Set/override some default options
     DateParameter.prototype.inputSize = 18;
     DateParameter.prototype.includeTime = false;
+
     DateParameter.prototype.renderWidget = function(builder) {
         var self = this;
         var $widget = $('<input type="date" class="date-input form-control">');
@@ -173,8 +180,13 @@ var Builder = (function($) {
         return $('<div class="date-input-wrapper">').append($field);
     };
 
+    /**
+     * A parameter representing date + time
+     */
     function DateTimeParameter(options) { this.options = options; }
     IRIS.Extend(DateTimeParameter, DateParameter);
+
+    // Set/override options
     DateTimeParameter.prototype.includeTime = true;
 
     /**
@@ -199,7 +211,7 @@ var Builder = (function($) {
     };
 
     /**
-     * Defines a fieldset.    The first argument is the legend, remaining arguments are
+     * Defines a fieldset. The first argument is the legend, remaining arguments are
      * the items in the fieldset.
      */
     function Fieldset(legend) {
@@ -289,12 +301,16 @@ var Builder = (function($) {
         return $div;
     };
 
-
+    /**
+     * Default builder options
+     */
     var DEFAULTS = {
         /* URL to retrieve Swagger definition from */
         swaggerURL: 'swagger-rkgravitymag.json',
         /* Swagger path to generate a builder for */
         path: '/query',
+        /* Method (eg. "get" or "post") to generate a builder for */
+        method: 'get',
         /* Bootstrap form classes */
         labelClass: 'col-xs-2',
         fieldClass: 'col-xs-10',
@@ -302,34 +318,40 @@ var Builder = (function($) {
         showHelpText: 'dialog'
     };
 
-    function Builder(options) {
-        this.initialize(options);
-    }
+    /**
+     * Main builder object.
+     * @param options : a dictionary of options, supplementing/overriding DEFAULTS
+     */
+    function Builder(options) { this.initialize(options); }
     IRIS.Extend(Builder, Renderable);
 
     Builder.prototype.initialize = function(options) {
         var self = this;
-        self._done = $.Deferred();
-        self._done.then(
-            function() { console.log("Success"); },
-            function(error) { console.log("Failure: " + error); }
-        );
-        self.done = self._done.promise();
         self.options = $.extend(true, {}, DEFAULTS);
         if (options) {
             $.extend(true, self.options, options);
         }
-        self.builderActions = [];
     };
 
     /* Main execution block for the Swagger Builder */
     Builder.prototype.run = function() {
         var self = this;
+        // Connect to the page elements
         self.initDOM();
+        // Initialization is a multi-step, partly asynchronous process, so use a Deferred to signal completion
+        self._done = $.Deferred();
+        self._done.then(
+            function() { console.log("Success"); },
+            function(error) { console.log("Failure: " + error); }
+        );
+        // What we actually expose/return is the promise
+        self.done = self._done.promise();
+        // Start by loading the Swagger JSON definition
         var $ajax = $.ajax(self.options.swaggerURL).then(
             function(data) {
                 self.data = data;
                 try {
+                    // Parse the JSON definition and build out the DOM
                     self.parseSwaggerData(data);
                     self.render();
                 }
@@ -339,25 +361,28 @@ var Builder = (function($) {
                 }
             },
             function(jqXHR, status, error) {
+                // Return a single error value, so that Ajax errors can be handled like any other erro
                 return error || status;
             }
         ).then(function() {
-            $("form#builder-form").builder(self.options);
-        }).then(function() {
-            $.each(self.builderActions, function(_i, action) {
-                    action();
-            })
+            // At this point the DOM is built, so we can attach the URLBuilder functionality to it
+            $("form#builder-form").urlBuilder(self.options);
         }).then(
+            // Resolve our Deferred to indicate the result
             self._done.resolve,
             self._done.reject,
             self._done.notify
         );
+        // Return the promise so the caller can say run().then(...)
         return self.done;
     };
 
-    /* Parse and build based on the top level Swagger JSON */
+    /**
+     *  Parse the top level Swagger JSON data
+     */
     Builder.prototype.parseSwaggerData = function(data) {
         var self = this;
+        // Service-level definition
         self.service = {
             title: data.info.title,
             description: data.info.description,
@@ -365,43 +390,76 @@ var Builder = (function($) {
             basePath: data.basePath,
             path: self.options.path
         };
-        self.operation = data.paths[self.options.path].get;
+        // Extract the operation-level definition and parse that separately
+        var pathData = data.paths[self.options.path]
+        if (!pathData) {
+            IRIS.Debug.error("Invalid service path given: " + self.options.path);
+            return;
+        }
+        self.operation = pathData[self.options.method];
+        if (!self.operation) {
+            IRIS.Debug.error("Method " + self.options.method + " is not defined for " + self.options.path);
+            return;
+        }
         self.parseSwaggerOperation(self.operation);
     };
 
-    /* Parse and build for a particular Swagger operation */
+    /**
+     *  Parse operation-level Swagger JSON data
+     */
     Builder.prototype.parseSwaggerOperation = function(operationData) {
         var self = this;
+        self.summary = operationData.summary;
+        self.description = operationData.description;
+        // The raw JSON definition
         self.parameters = operationData.parameters;
-        self.parameter_names = [];
+        // List of parameter names, this is mostly to preserve the ordering
+        self.parameterNames = [];
+        // A Parameter object for each parameter, which manages rendering and so forth
         self.params = {};
         $.each(self.parameters, function(_i, param) {
+            // Only handle the query parameters
             if (param.in == 'query') {
+                self.parameterNames.push(param.name);
+
+                // The value of the Builder parameter can be an instantiated
+                // Parameter object or a hash of options (or undefined)
+                var paramObj = null;
+                var builderParamOptions = null;
                 if (self.options.parameters) {
-                    $.extend(true, param, self.options.parameters[param.name]);
+                    // Get any parameter-level definition passed to the builder
+                    builderParamOptions = self.options.parameters[param.name];
+                    // If the definition has a .render attribute, it is the Parameter object itself
+                    if (builderParamOptions && builderParamOptions.render) {
+                        paramObj = builderParamOptions;
+                    }
                 }
-                self.parameter_names.push(param.name);
-                var paramObj = param.class;
+                // Create the Parameter object if necessary
                 if (!paramObj) {
+                    // A couple predefined types
                     if (param.type == "string") {
                         if (param.format == "date") {
-                            paramObj = new DateParameter();
+                            paramObj = new DateParameter(builderParamOptions || {});
                         }
                         else if (param.format == "date-time") {
-                            paramObj = new DateTimeParameter();
+                            paramObj = new DateTimeParameter(builderParamOptions || {});
                         }
                     }
                     if (!paramObj) {
-                        paramObj = new Parameter();
+                        paramObj = new Parameter(builderParamOptions || {});
                     }
                 }
+                // Pass in the Swagger JSON definition for the parameter
+                paramObj.setSwaggerDefinition(param);
+                // Add to our parameter set
                 self.params[param.name] = paramObj;
-                paramObj.initialize(param);
             }
         });
     };
 
-    /* Initialize the page DOM elements that this builder will control */
+    /**
+     * Initialize the page DOM elements that this builder will control
+     */
     Builder.prototype.initDOM = function() {
         this.$serviceTitle = $('#service-title').empty();
         this.$serviceDescription = $('#service-description').empty();
@@ -411,7 +469,9 @@ var Builder = (function($) {
         this.$usage = $('#usage-table').empty();
     };
 
-    /* Main render function */
+    /**
+     * Main render function
+     */
     Builder.prototype.render = function() {
         var self = this;
         self.$serviceTitle.html(self.service.title);
@@ -420,29 +480,26 @@ var Builder = (function($) {
         self.$operationDescription.html(self.operation.description);
         self.$form.prop('action', "http://" + self.service.host + self.service.basePath + self.service.path);
         if (self.options.showHelpText.indexOf('dialog') > -1) {
-                self.$usage.append(self.renderUsage());
+            self.$usage.append(self.renderUsage());
         }
         var items = self.options.layout;
         if (!items) {
-            items = self.parameter_names;
+            items = self.parameterNames;
         }
         self.$form.append(self.renderItems(self, items));
     };
 
-    /* Render the usage dialog content */
+    /**
+     * Render the usage dialog content
+     */
     Builder.prototype.renderUsage = function() {
         var self = this;
         var usage = []
-        $.each(self.parameter_names, function(_i, param_name) {
-            var paramObj = self.params[param_name];
+        $.each(self.parameterNames, function(_i, paramName) {
+            var paramObj = self.params[paramName];
             usage.push(paramObj.renderUsage(self));
         });
         return usage;
-    };
-
-    Builder.prototype.addBuilderAction = function(action) {
-        var self = this;
-        self.builderActions.push(action);
     };
 
     return {
@@ -457,6 +514,6 @@ var Builder = (function($) {
         Builder: Builder
     };
 
-})(jQuery);
+})(jQuery, IRIS);
 
 

@@ -11,21 +11,21 @@
     /* Conversion factor from degrees to meters */
     var DEG_TO_M = (2 * Math.PI * 6378137) / 360;
 
-    /*
-    Create a new picker
-
-    @param root : the root DOM element or jQuery selector to work from
-    @param options : a set of options, will be deep copied on top of
-                `Picker.prototype.defaults`
-    */
+    /**
+     * Create a new picker
+     *
+     * @param root : the root DOM element or jQuery selector to work from
+     * @param options : a set of options, will be deep copied on top of
+     *            `Picker.prototype.defaults`
+     */
     var Picker = function(root, options) {
         this.$root = $(root);
         this.parseOptions(options);
         this.start();
     };
-    /*
-    Default options for the drawn shapes (rect / circle)
-    */
+    /**
+     * Default options for the drawn shapes (rect / circle)
+     */
     var baseShapeOptions = {
         draggable: false,
         editable: false,
@@ -34,9 +34,9 @@
         strokeColor: '#6f6',
         fillColor: '#6f6'
     };
-    /*
-    Picker defaults
-    */
+    /**
+     * Picker defaults
+     */
     Picker.prototype.defaults = {
         /* List of the 4 N/S/E/W inputs (enables NSEW mode) */
         nsewInputs: [],
@@ -142,9 +142,11 @@
         // Set to null, "rect" or "circle"
         this.drawingMode = null;
     };
+    /* Indicate whether the picker supports the given drawing mode */
     Picker.prototype.hasDrawingMode = function(mode) {
         return (mode === null || this.options.drawingModes.indexOf(mode)>-1);
     };
+    /* Put the picker into the given drawing mode */
     Picker.prototype.setDrawingMode = function(mode) {
         if (!this.hasDrawingMode(mode)) {
             LOG("Bad drawing mode! " + mode);
@@ -160,12 +162,14 @@
         this.$circleBtn.toggleClass('active', mode === 'circle');
         this.$panBtn.toggleClass('active', !mode);
     };
+    /* Initialize the drawing mode buttons */
     Picker.prototype.initConnections = function() {
         var _this = this;
         this.$rectBtn.click(function() { _this.setDrawingMode('rect'); });
         this.$circleBtn.click(function() { _this.setDrawingMode('circle'); });
         this.$panBtn.click(function() { _this.setDrawingMode(null); });
     };
+    /* Initialize the map bounding box/circle shapes */
     Picker.prototype.initShapes = function() {
         var firstTime = true;
         if (this.hasDrawingMode('rect')) {
@@ -204,7 +208,7 @@
             }
         }
     }
-    /* Position is from mouse event evt.pageX, evt.pageY */
+    /* Get a pixel position based on mouse event evt.pageX, evt.pageY */
     Picker.prototype.getPoint = function(pageX, pageY) {
         var offset = this.$map.offset();
         var posX = Math.max(0, pageX - offset.left);
@@ -227,23 +231,24 @@
         return "" + Math.abs(lat) + latSuffix + " x " + Math.abs(lon) + lonSuffix;
     };
 
-
+    /* Initialize the NSEW bounding rectangle shape */
     Picker.prototype.initRect = function() {
-      var locN = parseFloat(this.$inputN.val());
-      var locS = parseFloat(this.$inputS.val());
-      var locE = parseFloat(this.$inputE.val());
-      var locW = parseFloat(this.$inputW.val());
-      // Skip if no/invalid coordinates
-      if (isNaN(locN) || isNaN(locS) || isNaN(locE) || isNaN(locW)) {
-          return;
-      }
-      // Skip if these are global coordinates
-      if (locN > 89 && locS < -89 && locE > 179 && locW < -179) {
-          return;
-      }
-      this.startRect(locN, locS, locE, locW);
+        // Initialize from the form inputs if possible
+        var locN = parseFloat(this.$inputN.val());
+        var locS = parseFloat(this.$inputS.val());
+        var locE = parseFloat(this.$inputE.val());
+        var locW = parseFloat(this.$inputW.val());
+        // Skip if no/invalid coordinates
+        if (isNaN(locN) || isNaN(locS) || isNaN(locE) || isNaN(locW)) {
+            return;
+        }
+        // Skip if these are global coordinates
+        if (locN > 89 && locS < -89 && locE > 179 && locW < -179) {
+            return;
+        }
+        this.startRect(locN, locS, locE, locW);
     };
-    /* Start a NSEW rect */
+    /* Show the NSEW bounding rectangle */
     Picker.prototype.startRect = function(n, s, e, w) {
         var sw = new google.maps.LatLng(s, w);
         var ne = new google.maps.LatLng(n, e);
@@ -273,7 +278,7 @@
             this.getLatLng(new google.maps.Point(right, top))
         ));
     };
-
+    /* Initialize the center/radius bounding circle shape */
     Picker.prototype.initCircle = function() {
       var centerLat = parseFloat(this.$inputCenterLat.val());
       var centerLon = parseFloat(this.$inputCenterLon.val());
@@ -286,7 +291,7 @@
       var radius = maxRadius * DEG_TO_M;
       this.startCircle(centerLat, centerLon, radius);
     };
-    /* Start a CR circle */
+    /* Show the center/radius bounding circle */
     Picker.prototype.startCircle = function(lat, lon, r) {
       var center = new google.maps.LatLng(lat, lon);
       var circleOptions = $.extend({}, this.options.circleOptions, {
@@ -315,6 +320,8 @@
         this.drawStartLatLng = this.getLatLng(this.drawStartPoint);
         var startLat = this.drawStartLatLng.lat();
         var startLng = this.drawStartLatLng.lng();
+        // Depending on the drawing mode, clear out any existing shape and restart using
+        // the current position
         if (this.drawingMode === 'rect') {
             if (this.rectShape) {
                 this.rectShape.setMap(null);
@@ -355,6 +362,7 @@
         this.drawStartPoint = this.drawStartLatLng = this.lastPoint = null;
     };
 
+    /* Initialize the Google Map */
     Picker.prototype.startMap = function() {
         var self = this;
         // Create map object
