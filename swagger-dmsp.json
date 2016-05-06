@@ -5,7 +5,7 @@
   "info": {
     "version": "1.0.0",
     "title": "GeoWS UnFunded DMSP",
-    "description": "A demonstration service showing access to NGDC DMSP files via a GeoWS style web service.",
+    "description": "A demonstration service showing access to NGDC (now NCEI) DMSP files via a GeoWS style web service.",
     "termsOfService": "TBD",
     "contact": {
       "name": "GeoWS Building Block",
