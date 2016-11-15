@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Vue Builder</title>
+    <script src="http://code.jquery.com/jquery-3.1.1.slim.js"
+      integrity="sha256-5i/mQ300M779N2OVDrl16lbohwXNUdzL/R2aVUXyXWA="
+      crossorigin="anonymous"></script>
+    <script src="js/vue/vue.js"></script>
+    <script src="js/vue/vuex.js"></script>
+    <script src="js/vue-builder.js"></script>
+    <script>
+$(function() {
+  builder({
+    initial: {
+      net: 'IU'
+    }
+  });
+});
+    </script>
+    <link rel="stylesheet" href="css/builder.css">
+  </head>
+  <body>
+    Builder is here:
+    <div style="border:1px solid #ddd">
+    <div id="builder">
+      <builder>
+        <text-input label="Network" name="net"></text-input>
+        <text-input label="Station" name="sta"></text-input>
+      </builder>
+    </div>
+  </body>
+</html>
