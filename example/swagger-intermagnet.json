@@ -1,0 +1,384 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "version": "1.0.0",
+    "title": "GeoWS UnFunded INTERMAGNET",
+    "description": "A demonstration service showing access to INTERMAGNET data via a GeoWS style web service.",
+    "termsOfService": "TBD",
+    "contact": {
+      "name": "GeoWS Building Block",
+      "email": "geows@iris.washington.edu"
+    },
+    "license": {
+      "name": "Data provided under GNU Lesser General Public License",
+      "url": "http://www.gnu.org/licenses/"
+    }
+  },
+  "host": "geows.ds.iris.edu",
+  "basePath": "/geows-uf",
+  "schemes": [
+    "http"
+  ],
+  "paths": {
+    "/intermagnet/1/query": {
+      "get": {
+        "tags": [
+          "INTERMAGNET"
+        ],
+        "summary": "Get INTERMAGNET data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data via a GeoWS style web service.</p><p>For more information about INTERMAGNET and data definition, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a></p><p>The <strong>email</strong> and <strong>accept</strong> parameters are required to indicate acceptance of conditions of use.</p><p>Additionally, <strong>observatories</strong> parameter is added to enable query by one or more observatories.</p><p>When content type of <strong>data</strong> is specified, this service submits requests in batches and polls for up to 10 times on 10 second intervals.</p>",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download request and indication of acceptance of conditions of use",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "accept",
+            "in": "query",
+            "description": "I accept the conditions of use and I confirm that the e-mail address I have entered is correct",
+            "required": true,
+            "type": "boolean",
+            "default": "false"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "<strong>files</strong> - list of available files, <strong>data</strong> - text version of magnetic data",
+            "required": false,
+            "type": "string",
+            "default": "files",
+            "enum": [
+              "files",
+              "data"
+            ]
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "<strong>text</strong> - data is in GeoWS well structured text form, <strong>IAGA2002</strong> - output is structured in INTERMAGNET format <a href='http://www.ngdc.noaa.gov/IAGA/vdat/iagaformat.html'>IAGA2002</a",
+            "required": false,
+            "type": "string",
+            "default": "text",
+            "enum": [
+              "text",
+              "IAGA2002"
+            ]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-10-30"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-11-01"
+          },
+          {
+            "name": "regions",
+            "in": "query",
+            "description": "Any or all of America,Asia,Europe,Pacific,Africa",
+            "required": true,
+            "type": "string",
+            "default": "America,Asia,Europe,Pacific,Africa"
+          },
+          {
+            "name": "latitudes",
+            "in": "query",
+            "description": "Any or all of NH,NM,E,SM,SH - where NH is North High Latitude, etc.",
+            "required": true,
+            "type": "string",
+            "default": "NH,NM,E,SM,SH"
+          },
+          {
+            "name": "observatories",
+            "in": "query",
+            "description": "Comma separated list, e.g. ASC,BOU,VIC  - empty list selects all.",
+            "required": false,
+            "type": "string",
+            "default": "AAA,BEL,CKI,DED,EBR,FCC,GAN"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of variation, provisional, quasi-definitive, best (best available), additionally for minute rate - definitive",
+            "required": true,
+            "type": "string",
+            "default": "best"
+          },
+          {
+            "name": "rate",
+            "in": "query",
+            "description": "The interval between data entries.",
+            "required": true,
+            "type": "string",
+            "default": "minute",
+            "enum": [
+              "minute",
+              "second"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request, and error messages releated to client interaction with WebServiceShell"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          },
+          "500": {
+            "description": "Internal Server Error, and error messages related to handler operation or WebServiceShell configuration"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      },
+      "head": {
+        "tags": [
+          "INTERMAGNET"
+        ],
+        "summary": "Get INTERMAGNET data",
+        "description": "<p>The <strong>intermagnet</strong> service provides a list of files or magnetic data via a GeoWS style web service.</p><p>For more information about INTERMAGNET and data definition, see <a href='http://intermagnet.org/data-donnee/download-eng.php'>INTERMAGNET Data Download</a></p><p>The <strong>email</strong> and <strong>accept</strong> parameters are required to indicate acceptance of conditions of use.</p><p>Additionally, <strong>observatories</strong> parameter is added to enable query by one or more observatories.</p><p>When content type of <strong>data</strong> is specified, this service submits requests in batches and polls for up to 10 times on 10 second intervals.</p>",
+        "operationId": "getData",
+        "produces": [
+          "text/plain"
+        ],
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "description": "required for data download request and indication of acceptance of conditions of use",
+            "required": true,
+            "type": "string",
+            "default": ""
+          },
+          {
+            "name": "accept",
+            "in": "query",
+            "description": "I accept the conditions of use and I confirm that the e-mail address I have entered is correct",
+            "required": true,
+            "type": "boolean",
+            "default": "false"
+          },
+          {
+            "name": "content",
+            "in": "query",
+            "description": "<strong>files</strong> - list of available files, <strong>data</strong> - text version of magnetic data",
+            "required": false,
+            "type": "string",
+            "default": "files",
+            "enum": [
+              "files",
+              "data"
+            ]
+          },
+          {
+            "name": "format",
+            "in": "query",
+            "description": "<strong>text</strong> - data is in GeoWS well structured text form, <strong>IAGA2002</strong> - output is structured in INTERMAGNET format <a href='http://www.ngdc.noaa.gov/IAGA/vdat/iagaformat.html'>IAGA2002</a",
+            "required": false,
+            "type": "string",
+            "default": "text",
+            "enum": [
+              "text",
+              "IAGA2002"
+            ]
+          },
+          {
+            "name": "starttime",
+            "in": "query",
+            "description": "start time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-10-30"
+          },
+          {
+            "name": "endtime",
+            "in": "query",
+            "description": "end time for desired coverage",
+            "required": true,
+            "type": "string",
+            "default": "2014-11-01"
+          },
+          {
+            "name": "regions",
+            "in": "query",
+            "description": "Any or all of America,Asia,Europe,Pacific,Africa",
+            "required": true,
+            "type": "string",
+            "default": "America,Asia,Europe,Pacific,Africa"
+          },
+          {
+            "name": "latitudes",
+            "in": "query",
+            "description": "Any or all of NH,NM,E,SM,SH - where NH is North High Latitude, etc.",
+            "required": true,
+            "type": "string",
+            "default": "NH,NM,E,SM,SH"
+          },
+          {
+            "name": "observatories",
+            "in": "query",
+            "description": "Comma separated list, e.g. ASC,BOU,VIC  - empty list selects all.",
+            "required": false,
+            "type": "string",
+            "default": "AAA,BEL,CKI,DED,EBR,FCC,GAN"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "description": "One of variation, provisional, quasi-definitive, best (best available), additionally for minute rate - definitive",
+            "required": true,
+            "type": "string",
+            "default": "best"
+          },
+          {
+            "name": "rate",
+            "in": "query",
+            "description": "The interval between data entries.",
+            "required": true,
+            "type": "string",
+            "default": "minute",
+            "enum": [
+              "minute",
+              "second"
+            ]
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "204": {
+            "description": "No Content"
+          },
+          "400": {
+            "description": "Bad Request, and error messages releated to client interaction with WebServiceShell"
+          },
+          "404": {
+            "description": "Not Found"
+          },
+          "406": {
+            "description": "Not Acceptable"
+          },
+          "500": {
+            "description": "Internal Server Error, and error messages related to handler operation or WebServiceShell configuration"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/intermagnet/1/version": {
+      "get": {
+        "tags": [
+          "INTERMAGNET"
+        ],
+        "summary": "Get version of service",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this service)",
+        "operationId": "getVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "406": {
+            "description": "Not Acceptable - look at Accept headers, WebServiceShell only returns text/plain here"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    },
+    "/intermagnet/1/wssversion": {
+      "get": {
+        "tags": [
+          "INTERMAGNET"
+        ],
+        "summary": "Get version of WebServiceShell",
+        "description": "<p>The <strong>wssversion</strong> service provides the version number of this WebServiceShell (WSS))",
+        "operationId": "getWssVersion",
+        "produces": [
+          "text/plain"
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful"
+          },
+          "406": {
+            "description": "Not Acceptable - look at Accept headers, WebServiceShell only returns text/plain here"
+          },
+          "500": {
+            "description": "Internal Server Error"
+          }
+        },
+        "security": [
+          {
+            "TBD_auth": [
+              "write:writeTBD",
+              "read:readTBD"
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "securityDefinitions": {
+    "api_key": {
+      "type": "apiKey",
+      "name": "api_key",
+      "in": "header"
+    },
+    "TBD_auth": {
+      "type": "oauth2",
+      "authorizationUrl": "http://TBD/api/oauth/dialog",
+      "flow": "implicit"
+    }
+  }
+}
