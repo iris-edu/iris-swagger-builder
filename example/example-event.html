@@ -124,6 +124,55 @@
       </div>
     </div>
 
+    <div class="row">
+      <div class="col6">
+        <input name="starttime"></input>
+        <input name="endtime"></input>
+
+        <fieldset>
+          <legend>Advanced search</legend>
+        <input name="eventid"></input>
+        <input name="updatedafter"></input>
+        </fieldset>
+
+        <options>
+          <option label="All"></option>
+          <option label="Lat/Lon Box">
+            <coordinates box="maxlat minlat maxlon minlon"></coordinates>
+          </option>
+          <option label="Lat/Lon Radius">
+            <coordinates circle="lat lon maxradius"></coordinates>
+          </option>
+        </options>
+
+                 "starttime", "endtime",
+                 "minmag", "maxmag", "magtype",
+                 "mindepth", "maxdepth",
+                 "catalog", "contributor",
+                 "includeallorigins", "includeallmagnitudes", "includearrivals",
+                 "orderby", "format",
+                 "limit", "offset",
+                 new irisSwaggerBuilder.Fieldset("Advanced search",
+                     "eventid", "updatedafter"
+                 )
+             ],
+             [
+                 new irisSwaggerBuilder.Fieldset("Location",
+                     new irisSwaggerBuilder.OptGroup(
+                         '_location_type',
+                         ['All'],
+                         ['Lat/Lon Box',
+                             new irisSwaggerBuilder.CoordinateBox('maxlat', 'minlat', 'maxlon', 'minlon')
+                         ],
+                         ['Lat/Lon Radius',
+                             new irisSwaggerBuilder.CoordinateRadius('lat', 'lon', 'maxradius'),
+                             'minradius'
+                         ]
+                     )
+                 )
+             ]
+         )
+
 
     <div id="footer">
     </div><!-- #footer -->

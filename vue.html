@@ -3,32 +3,39 @@
   <head>
     <meta charset="UTF-8" />
     <title>Vue Builder</title>
-    <script src="http://code.jquery.com/jquery-3.1.1.slim.js"
-      integrity="sha256-5i/mQ300M779N2OVDrl16lbohwXNUdzL/R2aVUXyXWA="
-      crossorigin="anonymous"></script>
+    <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
     <script src="js/vue/vue.js"></script>
     <script src="js/vue/vuex.js"></script>
     <script src="js/irisUtil.js"></script>
     <script src="js/vueSwaggerBuilder.js"></script>
-    <script>
-$(function() {
-  vueBuilder({
-    initial: {
-      net: 'IU'
-    }
-  });
-});
-    </script>
     <link rel="stylesheet" href="css/builder.css">
   </head>
   <body>
     Builder is here:
     <div style="border:1px solid #ddd">
     <div id="builder">
-      <builder>
-        <text-input label="Network" name="net"></text-input>
-        <text-input label="Station" name="sta"></text-input>
+      <builder definition="example/swagger-event.json">
+        <text-input name="starttime"></text-input>
+        <text-input name="endtime"></text-input>
+
+        <fieldset>
+          <legend>Advanced search</legend>
+          <text-input name="eventid"></text-input>
+          <text-input name="updatedafter"></text-input>
+        </fieldset>
+
       </builder>
     </div>
+
+        <options>
+          <option label="All"></option>
+          <option label="Lat/Lon Box">
+            <coordinates nsew="maxlat minlat maxlon minlon"></coordinates>
+          </option>
+          <option label="Lat/Lon Radius">
+            <coordinates circle="lat lon maxradius"></coordinates>
+          </option>
+        </options>
+
   </body>
 </html>

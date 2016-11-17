@@ -314,12 +314,60 @@
         return $div;
     };
 
+
+    Vue.component('text-input', {
+        template: '\
+            <div class="form-group">\
+              <label v-bind:for="randomId">{{ displayLabel }}:</label>\
+              <input v-bind:id="randomId" v-model="value">\
+            </div>\
+          ',
+          props: ['name', 'label'],
+          data: function () {
+              return {
+                  randomId: 'input-' + Math.random()
+              }
+          },
+          computed: {
+              displayLabel: function() {
+                  if (this.label) {
+                      return this.label;
+                  } else if (this.definition()) {
+                      return this.definition().description;
+                  } else {
+                      return this.name;
+                  }
+              },
+              value: {
+                  get: function() {
+                      return this.$store.state.input[this.name];
+                  },
+                  set: function(v) {
+                      var update = {};
+                      update[this.name] = v;
+                      this.$store.commit('update', update);
+                  }
+              }
+          },
+          methods: {
+              definition: function() {
+                  if (this.$store && this.$store.state.definition && this.$store.state.definition.operation.params[this.name]) {
+                      return this.$store.state.definition.operation.params[this.name];
+                  } else {
+                      return {};
+                  }
+              }
+          }
+    });
+
+
+
     /**
      * Default builder options
      */
     var DEFAULTS = {
         /* URL to retrieve Swagger definition from */
-        swaggerURL: 'example.json',
+        swaggerURL: 'example/swagger-event.json',
         /* Swagger path to generate a builder for */
         path: '/query',
         /* Method (eg. "get" or "post") to generate a builder for */
@@ -337,193 +385,6 @@
      * Main builder object.
      * @param options : a dictionary of options, supplementing/overriding DEFAULTS
      */
-    function Builder(options) { this.initialize(options); }
-    irisUtil.Extend(Builder, Renderable);
-
-    Builder.prototype.initialize = function(options) {
-        var self = this;
-        self.options = $.extend(true, {}, DEFAULTS);
-        if (options) {
-            $.extend(true, self.options, options);
-        }
-        self.postInitCallbacks = [];
-    };
-
-    /* Main execution block for the Swagger Builder */
-    Builder.prototype.run = function() {
-        var self = this;
-        // Connect to the page elements
-        self.initDOM();
-        // Run a chain of deferred steps, starting with an Ajax call to get the Swagger definition
-        // Return the chain, so the caller can say builder.run().then(...)
-        return $.ajax(self.options.swaggerURL).then(
-            function(data) {
-                self.data = data;
-                try {
-                    // Parse the JSON definition and build out the DOM
-                    self.parseSwaggerData(data);
-                    self.render();
-                }
-                catch(error) {
-                    irisUtil.Log.error("Error: " + (error.stack || error));
-                    return $.Deferred().reject(error);
-                }
-            },
-            function(jqXHR, status, error) {
-                // Return a single error value, so that Ajax errors can be handled like any other error
-                return error || status;
-            }
-        ).then(function() {
-            // At this point the DOM is built, so we can initialize the irisBuilder on it
-            try {
-                $(self.options.form).irisBuilder(self.options);
-            }
-            catch(error) {
-                irisUtil.Log.error("Error: " + (error.stack || error));
-                return $.Deferred().reject(error);
-            }
-        }).then(function() {
-            // Run any post-initialization callbacks added by individual components
-            $.each(self.postInitCallbacks, function(_i, callback) {
-                callback();
-            });
-        }).then(
-            function() { irisUtil.Log.debug("Success"); },
-            function(error) { irisUtil.Log.error("Failure: " + error); return error; }
-        );
-    };
-
-    /**
-     *  Parse the top level Swagger JSON data
-     */
-    Builder.prototype.parseSwaggerData = function(data) {
-        var self = this;
-        // Service-level definition
-        self.service = {
-            title: data.info.title,
-            description: data.info.description,
-            host: data.host,
-            basePath: data.basePath,
-            path: self.options.path
-        };
-        // Extract the operation-level definition and parse that separately
-        var pathData = data.paths[self.options.path]
-        if (!pathData) {
-            throw "Invalid service path given: " + self.options.path;
-        }
-        self.operation = pathData[self.options.method];
-        if (!self.operation) {
-            throw "Method " + self.options.method + " is not defined for " + self.options.path;
-        }
-        self.parseSwaggerOperation(self.operation);
-    };
-
-    /**
-     *  Parse operation-level Swagger JSON data
-     */
-    Builder.prototype.parseSwaggerOperation = function(operationData) {
-        var self = this;
-        self.summary = operationData.summary;
-        self.description = operationData.description;
-        // The raw JSON definition
-        self.parameters = operationData.parameters;
-        // List of parameter names, this is mostly to preserve the ordering
-        self.parameterNames = [];
-        // A Parameter object for each parameter, which manages rendering and so forth
-        self.params = {};
-        $.each(self.parameters, function(_i, param) {
-            // Only handle the query parameters
-            if (param.in == 'query') {
-                self.parameterNames.push(param.name);
-
-                // The value of the Builder parameter can be an instantiated
-                // Parameter object or a hash of options (or undefined)
-                var paramObj = null;
-                var builderParamOptions = null;
-                if (self.options.parameters) {
-                    // Get any parameter-level definition passed to the builder
-                    builderParamOptions = self.options.parameters[param.name];
-                    // If the definition has a .render attribute, it is the Parameter object itself
-                    if (builderParamOptions && builderParamOptions.render) {
-                        paramObj = builderParamOptions;
-                    }
-                }
-                // Create the Parameter object if necessary
-                if (!paramObj) {
-                    // A couple predefined types
-                    if (param.type == "string") {
-                        if (param.format == "date") {
-                            paramObj = new DateParameter(builderParamOptions || {});
-                        }
-                        else if (param.format == "date-time") {
-                            paramObj = new DateTimeParameter(builderParamOptions || {});
-                        }
-                    }
-                    if (!paramObj) {
-                        paramObj = new Parameter(builderParamOptions || {});
-                    }
-                }
-                // Pass in the Swagger JSON definition for the parameter
-                paramObj.setSwaggerDefinition(param);
-                // Add to our parameter set
-                self.params[param.name] = paramObj;
-            }
-        });
-    };
-
-    /**
-     * Initialize the page DOM elements that this builder will control
-     */
-    Builder.prototype.initDOM = function() {
-        this.$serviceTitle = $('#service-title').empty();
-        this.$serviceDescription = $('#service-description').empty();
-        this.$operationSummary = $('#operation-summary').empty();
-        this.$operationDescription = $('#operation-description').empty();
-        this.$form = $('form#builder-form').empty();
-        this.$usage = $('#usage-table').empty();
-    };
-
-    /**
-     * Main render function
-     */
-    Builder.prototype.render = function() {
-        var self = this;
-        self.$serviceTitle.html(self.service.title);
-        self.$serviceDescription.html(self.service.description);
-        self.$operationSummary.html(self.operation.summary);
-        self.$operationDescription.html(self.operation.description);
-        self.$form.prop('action', "http://" + self.service.host + self.service.basePath + self.service.path);
-        if (self.options.showHelpText.indexOf('dialog') > -1) {
-            self.$usage.append(self.renderUsage());
-        }
-        var items = self.options.layout;
-        if (!items) {
-            items = self.parameterNames;
-        }
-        self.$form.append(self.renderItems(self, items));
-    };
-
-    /**
-     * Render the usage dialog content
-     */
-    Builder.prototype.renderUsage = function() {
-        var self = this;
-        var usage = []
-        $.each(self.parameterNames, function(_i, paramName) {
-            var paramObj = self.params[paramName];
-            usage.push(paramObj.renderUsage(self));
-        });
-        return usage;
-    };
-
-    /**
-     * API for individual components to register functionality that will run after setup is
-     * complete.  For example,
-     */
-    Builder.prototype.addPostInitCallback = function(callback) {
-        var self = this;
-        self.postInitCallbacks.push(callback);
-    };
 
 //    return {
 //        Parameter: Parameter,
@@ -537,87 +398,134 @@
 //        Builder: Builder
 //    };
 
-        Vue.component('text-input', {
-            template: '\
-                <div class="form-group">\
-                  <label v-bind:for="randomId">{{ label }}:</label>\
-                  <input v-bind:id="randomId" v-model="value">\
-                </div>\
-              ',
-              props: ['name', 'label'],
-              data: function () {
-                  return {
-                      randomId: 'input-' + Math.random()
-                  }
-              },
-              computed: {
-                  value: {
-                      get: function() {
-                          return this.$store.state.input[this.name];
-                      },
-                      set: function(v) {
-                          var update = {};
-                          update[this.name] = v;
-                          this.$store.commit('update', update);
-                      }
-                  }
-              }
-        });
-
         Vue.component('builder', {
             template: '\
                 <div> \
                     <h2>Builder</h2> \
                     <slot>fields</slot> \
-                    <div>query?{{ url }}</div> \
+                    <div>{{ querypath }}?{{ url }}</div> \
                 </div> \
             ',
+            props: ['definition', 'path', 'method'],
+            data: function() {
+                return {
+                    service: {},
+                    operation: {}
+                };
+            },
             computed: {
+                querypath: function() {
+                    if (this.$store.state.service) {
+                        return this.$store.state.service.basePath + this.$store.state.service.path;
+                    } else {
+                        return '-';
+                    }
+                },
                 url: function() {
-                    return $.param(this.$store.state.query);
+                    return $.param(this.$store.state.query || []);
                 }
+            },
+            mounted: function() {
+                builder({
+                   definition: this.definition,
+                   path: this.path || '/query',
+                   method: this.method || 'get'
+                });
             }
         });
 
-        return function(options) {
-
-            if (!options.getQuery) {
-                options.getQuery = function(inputs) {
-                    var query = {};
-                    for (var k in inputs) {
-                        if (inputs[k]) {
-                            query[k] = inputs[k];
-                        }
-                    }
-                    return query;
-                };
-            }
-
-            var storeOptions = {
-                state: {
-                    input: $.extend({}, options.initial),
-                    query: options.getQuery(options.initial)
+        var storeOptions = {
+            state: {
+                input: {}
+            },
+            mutations: {
+                update: function(state, data) {
                 },
-                mutations: {
-                    update: function(state, data) {
-                        for (var k in data) {
-                            Vue.set(state.input, k, data[k]);
-                        }
-                        state.query = options.getQuery(state.input);
+                load: function(state, definition) {
+                    state.definition = definition;
+                },
+            }
+        };
+        var store = new Vuex.Store(storeOptions);
+
+        function builder(options) {
+
+            function parseSwaggerData(data) {
+                var definition = {
+                    service: {
+                        title: data.info.title,
+                        description: data.info.description,
+                        host: data.host,
+                        basePath: data.basePath,
+                        path: options.path
                     }
+                };
+                // Extract the operation-level definition and parse that separately
+                var pathData = data.paths[options.path]
+                if (!pathData) {
+                    throw "Invalid service path given: " + options.path;
                 }
+                operation = pathData[options.method];
+                if (!operation) {
+                    throw "Method " + options.method + " is not defined for " + options.path;
+                }
+                definition.operation = parseSwaggerOperation(operation);
+                return definition;
             };
 
-            var store = new Vuex.Store(storeOptions);
+            function parseSwaggerOperation(operationData) {
+                var operation = {
+                    summary: operationData.summary,
+                    description: operationData.description,
+                    // List of parameter names, this is mostly to preserve the ordering
+                    parameterNames: [],
+                    // Information about each parameter
+                    params: {}
+                };
+                $.each(operationData.parameters, function(_i, param) {
+                    // Only handle the query parameters
+                    if (param.in == 'query') {
+                        operation.parameterNames.push(param.name);
+                        operation.params[param.name] = param;
+                    }
+                });
+                return operation;
+            };
+
+            return $.ajax(options.definition).then(
+                function(data) {
+                    self.data = data;
+                    try {
+                        // Parse the JSON definition and build out the DOM
+                        return parseSwaggerData(data);
+                    }
+                    catch(error) {
+                        irisUtil.Log.error("Error: " + (error.stack || error));
+                        return $.Deferred().reject(error);
+                    }
+                },
+                function(jqXHR, status, error) {
+                    // Return a single error value, so that Ajax errors can be handled like any other error
+                    return error || status;
+                }
+            ).then(
+                function(definition) {
+                    store.commit('load', definition);
+                }
+            ).then(
+                function() { irisUtil.Log.debug("Success"); },
+                function(error) { irisUtil.Log.error("Failure: " + error); return error; }
+            );
+        };
+
+
+        $(function() {
             window.vueWidget = new Vue({
                 el: '#builder',
                 store
             });
-        }
+        });
 }));
-
-
-
 
 
 
