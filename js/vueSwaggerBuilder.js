@@ -315,49 +315,182 @@
     };
 
 
+
+
+
+    var baseFieldMixin = {
+        props: ['name', 'label'],
+        data: function () {
+            return {
+                randomId: 'input-' + Math.random()
+            }
+        },
+        computed: {
+            definition: function() {
+                return this.$store.state.definition.operation.params[this.name];
+            },
+            checkbox: function() {
+                return !this.definition.required;
+            },
+            displayLabel: function() {
+                return (this.label || this.definition.description || this.name);
+            },
+            checked: {
+                get: function() {
+                    return (!this.checkbox || this.getState(this.name + "-check"));
+                },
+                set: function(v) {
+                    this.setState(this.name + "-check", v);
+                    this.updateQuery();
+                }
+            },
+            value: {
+                get: function() {
+                    var value = this.getState(this.name);
+                    if (value === undefined) {
+                        value = "";
+                    }
+                    return value;
+                },
+                set: function(v) {
+                    this.setState(this.name, v);
+                    this.updateQuery();
+                }
+            }
+        },
+        methods: {
+            getState: function(k) {
+                return this.$store.state.input[k];
+            },
+            setState: function(k, v) {
+                var update = {};
+                update[k] = v;
+                this.$store.commit('update', update);
+            },
+            updateQuery: function() {
+                var update = {};
+                if (this.checked) {
+                    update[this.name] = this.value;
+                } else {
+                    update[this.name] = "";
+                }
+                this.$store.commit('updateQuery', update);
+            }
+        }
+    };
+
     Vue.component('text-input', {
         template: '\
-            <div class="form-group">\
-              <label v-bind:for="randomId">{{ displayLabel }}:</label>\
-              <input v-bind:id="randomId" v-model="value">\
-            </div>\
-          ',
-          props: ['name', 'label'],
-          data: function () {
-              return {
-                  randomId: 'input-' + Math.random()
-              }
-          },
-          computed: {
-              displayLabel: function() {
-                  if (this.label) {
-                      return this.label;
-                  } else if (this.definition()) {
-                      return this.definition().description;
-                  } else {
-                      return this.name;
-                  }
-              },
-              value: {
-                  get: function() {
-                      return this.$store.state.input[this.name];
-                  },
-                  set: function(v) {
-                      var update = {};
-                      update[this.name] = v;
-                      this.$store.commit('update', update);
-                  }
-              }
-          },
-          methods: {
-              definition: function() {
-                  if (this.$store && this.$store.state.definition && this.$store.state.definition.operation.params[this.name]) {
-                      return this.$store.state.definition.operation.params[this.name];
-                  } else {
-                      return {};
-                  }
-              }
-          }
+            <div class="form-group"> \
+              <label :for="randomId">{{ displayLabel }}:</label> \
+              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
+              <input :disabled="!checked" :id="randomId" v-model="value" /> \
+            </div> \
+            ',
+        mixins: [baseFieldMixin]
+    });
+
+    Vue.component('date-input', {
+        template: '\
+            <div class="form-group"> \
+              <label :for="randomId">{{ displayLabel }}:</label> \
+              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
+              <datepicker :id="randomId" v-model="value" format="yyyy-MM-dd" /> \
+            </div> \
+            ',
+        components: {
+            datepicker: VueStrap.datepicker
+        },
+        mixins: [baseFieldMixin]
+    });
+
+    Vue.component('choice-input', {
+        template: '\
+            <div class="form-group"> \
+              <label :for="randomId">{{ displayLabel }}:</label> \
+              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
+              <select :id="randomId" v-model="value"><option v-for="choice in choices">{{ choice }}</option></select> \
+            </div> \
+            ',
+        mixins: [baseFieldMixin],
+        computed: {
+            choices: function() {
+                return this.definition.enum;
+            }
+        }
+    });
+
+    Vue.component('boolean-input', {
+        template: '\
+            <div class="form-group"> \
+              <label :for="randomId">{{ displayLabel }}:</label> \
+              <input :id="randomId" v-model="value" type="checkbox" value="true" /> \
+            </div> \
+            ',
+        mixins: [baseFieldMixin],
+        computed: {
+            checkbox: function() {
+                return false;
+            },
+        }
+    });
+
+    Vue.component('field', {
+        render: function(h) {
+            return h('div', {
+                'class': 'form-group'
+            }, [
+                'Test'
+            ]);
+        },
+        render2: function(h) {
+            var self = this;
+            var checkbox = '';
+            if (this.checkbox) {
+                checkbox = h('input', {
+                    attrs: {
+                        type: 'checkbox'
+                    },
+                    domProps: {
+                        value: self.checked
+                    },
+                    on: {
+                        input: function(e) {
+                            self.checked = e.target.value;
+                        }
+                    }
+                });
+            }
+            var input = h('input', {
+                attrs: {
+                    type: 'text',
+                    id: self.randomId
+                },
+                domProps: {
+                    value: self.value
+                },
+                on: {
+                    input: function(e) {
+                        self.value = e.target.value;
+                    }
+                }
+            });
+            return h('div', {
+                'class': 'form-group'
+            }, [
+                h('label', {
+                    attrs: {
+                        'for': self.randomId
+                    }
+                }, [
+                        self.displayLabel
+                    ]
+                ),
+                checkbox,
+                input
+            ]);
+        },
+        mixins: [baseFieldMixin]
     });
 
 
@@ -400,29 +533,43 @@
 
         Vue.component('builder', {
             template: '\
-                <div> \
-                    <h2>Builder</h2> \
+                <div v-if="ready"> \
+                    <h2>{{ serviceDefinition.title }}</h2> \
+                    <p>{{ serviceDefinition.description }}</p> \
                     <slot>fields</slot> \
-                    <div>{{ querypath }}?{{ url }}</div> \
+                    <div>{{ queryPath }}?{{ queryParams }}</div> \
+                </div> \
+                <div v-else> \
+                    <div v-if="error" class="error"> \
+                        {{ error }} \
+                    </div> \
+                    <div v-else> \
+                        Loading... \
+                    </div> \
                 </div> \
             ',
             props: ['definition', 'path', 'method'],
             data: function() {
-                return {
-                    service: {},
-                    operation: {}
-                };
+                return {};
             },
             computed: {
-                querypath: function() {
-                    if (this.$store.state.service) {
-                        return this.$store.state.service.basePath + this.$store.state.service.path;
-                    } else {
-                        return '-';
-                    }
+                ready: function() {
+                    return this.$store.state.definition.service;
                 },
-                url: function() {
+                serviceDefinition: function() {
+                    return this.ready ? this.$store.state.definition.service : {};
+                },
+                operationDefinition: function() {
+                    return this.ready ? this.$store.state.definition.operation : {};
+                },
+                queryPath: function() {
+                    return this.serviceDefinition.basePath + this.serviceDefinition.path;
+                },
+                queryParams: function() {
                     return $.param(this.$store.state.query || []);
+                },
+                error: function() {
+                    return this.$store.state.error;
                 }
             },
             mounted: function() {
@@ -436,14 +583,30 @@
 
         var storeOptions = {
             state: {
-                input: {}
+                query: {},
+                input: {},
+                definition: {},
+                error: null
             },
             mutations: {
+                updateQuery: function(state, data) {
+                    var query = $.extend({}, state.query, data);
+                    for (var k in query) {
+                        if (query[k] === "") {
+                            delete query[k];
+                        }
+                    }
+                    state.query = query;
+                },
                 update: function(state, data) {
+                    state.input = $.extend({}, state.input, data);
                 },
                 load: function(state, definition) {
                     state.definition = definition;
                 },
+                error: function(state, error) {
+                    state.error = error;
+                }
             }
         };
         var store = new Vuex.Store(storeOptions);
@@ -492,33 +655,27 @@
                 return operation;
             };
 
+            /* Note that this is written for jQuery 3.0, which changed how Deferreds work */
             return $.ajax(options.definition).then(
                 function(data) {
-                    self.data = data;
-                    try {
-                        // Parse the JSON definition and build out the DOM
-                        return parseSwaggerData(data);
-                    }
-                    catch(error) {
-                        irisUtil.Log.error("Error: " + (error.stack || error));
-                        return $.Deferred().reject(error);
-                    }
+                    return parseSwaggerData(data);
                 },
                 function(jqXHR, status, error) {
-                    // Return a single error value, so that Ajax errors can be handled like any other error
-                    return error || status;
+                    throw (error || status);
                 }
             ).then(
                 function(definition) {
+                    irisUtil.Log.debug("Success");
                     store.commit('load', definition);
+                },
+                function(error) {
+                    irisUtil.Log.error("Error: " + error);
+                    store.commit('error', error);
                 }
-            ).then(
-                function() { irisUtil.Log.debug("Success"); },
-                function(error) { irisUtil.Log.error("Failure: " + error); return error; }
             );
         };
 
-
+        irisUtil.Log.setLevel('debug');
         $(function() {
             window.vueWidget = new Vue({
                 el: '#builder',

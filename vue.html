@@ -5,9 +5,11 @@
     <title>Vue Builder</title>
     <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
     <script src="js/vue/vue.js"></script>
+    <script src="js/vue-strap/vue-strap.js"></script>
     <script src="js/vue/vuex.js"></script>
     <script src="js/irisUtil.js"></script>
     <script src="js/vueSwaggerBuilder.js"></script>
+    </script>
     <link rel="stylesheet" href="css/builder.css">
   </head>
   <body>
@@ -15,8 +17,12 @@
     <div style="border:1px solid #ddd">
     <div id="builder">
       <builder definition="example/swagger-event.json">
-        <text-input name="starttime"></text-input>
+        <date-input name="starttime" label="Start Time"></date-input>
         <text-input name="endtime"></text-input>
+        <text-input name="minmag"></text-input>
+        <choice-input name="magtype"></choice-input>
+        <boolean-input name="includearrivals" />
+        <field name="lat"></field>
 
         <fieldset>
           <legend>Advanced search</legend>

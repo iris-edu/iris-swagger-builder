@@ -1,3 +1,7 @@
 #builder {
   border: 1px solid #ddd;
 }
+
+.error {
+  color: #c33;
+}
