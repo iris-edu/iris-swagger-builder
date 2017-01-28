@@ -8,8 +8,11 @@
     <script src="js/vue-strap/vue-strap.js"></script>
     <script src="js/vue/vuex.js"></script>
     <script src="js/irisUtil.js"></script>
+    <script src="calendar/flatpickr.js"></script>
+    <script src="calendar/vue-flatpickr.js"></script>
     <script src="js/vueSwaggerBuilder.js"></script>
     </script>
+    <link rel="stylesheet" href="calendar/flatpickr.css">
     <link rel="stylesheet" href="css/builder.css">
   </head>
   <body>
@@ -17,17 +20,35 @@
     <div style="border:1px solid #ddd">
     <div id="builder">
       <builder definition="example/swagger-event.json">
-        <date-input name="starttime" label="Start Time"></date-input>
-        <text-input name="endtime"></text-input>
-        <text-input name="minmag"></text-input>
-        <choice-input name="magtype"></choice-input>
-        <boolean-input name="includearrivals" />
-        <field name="lat"></field>
+          <date-input name="starttime"></date-input>
+          <date-input name="endtime"></date-input>
+          <text-input name="minmag"></text-input>
+          <text-input name="maxmag"></text-input>
+          <choice-input name="magtype"></choice-input>
+          <choice-input name="catalog"></choice-input>
+          <choice-input name="contributor"></choice-input>
+          <boolean-input name="includeallorigins"></boolean-input>
+          <boolean-input name="includeallmagnitudes"></boolean-input>
+          <boolean-input name="includearrivals"></boolean-input>
+          <text-input name="minlon"></text-input>
+          <text-input name="maxlon"></text-input>
+          <text-input name="minlat"></text-input>
+          <text-input name="maxlat"></text-input>
+          <text-input name="lat"></text-input>
+          <text-input name="lon"></text-input>
+          <text-input name="minradius"></text-input>
+          <text-input name="maxradius"></text-input>
+          <text-input name="mindepth"></text-input>
+          <text-input name="maxdepth"></text-input>
+          <choice-input name="orderby"></choice-input>
+          <choice-input name="format"></choice-input>
+          <text-input name="limit"></text-input>
+          <text-input name="offset"></text-input>
+          <text-input name="eventid"></text-input>
+          <date-input name="updatedafter"></date-input>
 
         <fieldset>
           <legend>Advanced search</legend>
-          <text-input name="eventid"></text-input>
-          <text-input name="updatedafter"></text-input>
         </fieldset>
 
       </builder>

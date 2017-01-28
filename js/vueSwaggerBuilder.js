@@ -10,6 +10,10 @@
 }(this, function ($, irisUtil, Vue, Vuex) {
 
     /**
+     * IMPORTANT: This library requires jQuery 3
+     */
+
+    /**
      * Base class for any component that needs to render itself onto the page
      */
     function Renderable() {}
@@ -166,6 +170,7 @@
 
     DateParameter.prototype.renderWidget = function(builder) {
         var self = this;
+        var $widget = $('<Flatpickr v-model="" />');
         var $widget = $('<input type="date" class="date-input form-control">');
         $widget.prop('id', self.id).prop('name', self.name);
         $widget.prop('size', self.inputSize);
@@ -333,7 +338,7 @@
                 return !this.definition.required;
             },
             displayLabel: function() {
-                return (this.label || this.definition.description || this.name);
+                return (this.label || this.name);
             },
             checked: {
                 get: function() {
@@ -395,12 +400,9 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <datepicker :id="randomId" v-model="value" format="yyyy-MM-dd" /> \
+              <Flatpickr :disabled="!checked" :id="randomId" v-model="value" /> \
             </div> \
             ',
-        components: {
-            datepicker: VueStrap.datepicker
-        },
         mixins: [baseFieldMixin]
     });
 
@@ -409,7 +411,7 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <select :id="randomId" v-model="value"><option v-for="choice in choices">{{ choice }}</option></select> \
+              <select :disabled="!checked" :id="randomId" v-model="value"><option v-for="choice in choices">{{ choice }}</option></select> \
             </div> \
             ',
         mixins: [baseFieldMixin],
@@ -532,6 +534,7 @@
 //    };
 
         Vue.component('builder', {
+            // Main page template
             template: '\
                 <div v-if="ready"> \
                     <h2>{{ serviceDefinition.title }}</h2> \
@@ -553,26 +556,33 @@
                 return {};
             },
             computed: {
+                // Is everything loaded and ready to go
                 ready: function() {
                     return this.$store.state.definition.service;
                 },
+                // Service definition from JSON (empty if not ready)
                 serviceDefinition: function() {
                     return this.ready ? this.$store.state.definition.service : {};
                 },
+                // Operation definition from JSON (empty if not ready)
                 operationDefinition: function() {
                     return this.ready ? this.$store.state.definition.operation : {};
                 },
+                // Full URL path for the query (eg. '/fdsnws/event/1/query')
                 queryPath: function() {
                     return this.serviceDefinition.basePath + this.serviceDefinition.path;
                 },
+                // List of query parameters
                 queryParams: function() {
                     return $.param(this.$store.state.query || []);
                 },
+                // The current error message, if one exists
                 error: function() {
                     return this.$store.state.error;
                 }
             },
             mounted: function() {
+                // Initialize when mounted
                 builder({
                    definition: this.definition,
                    path: this.path || '/query',
@@ -581,6 +591,7 @@
             }
         });
 
+        // Simple Vuex store
         var storeOptions = {
             state: {
                 query: {},
@@ -590,6 +601,7 @@
             },
             mutations: {
                 updateQuery: function(state, data) {
+                    // Called whenever something changes
                     var query = $.extend({}, state.query, data);
                     for (var k in query) {
                         if (query[k] === "") {
@@ -599,12 +611,15 @@
                     state.query = query;
                 },
                 update: function(state, data) {
+                    //
                     state.input = $.extend({}, state.input, data);
                 },
                 load: function(state, definition) {
+                    // Load a JSON definition
                     state.definition = definition;
                 },
                 error: function(state, error) {
+                    // Enter (or clear) the error state
                     state.error = error;
                 }
             }
@@ -612,6 +627,14 @@
         var store = new Vuex.Store(storeOptions);
 
         function builder(options) {
+
+            /* Convert swagger data to a flatter format
+             * definition.service = "service" level information combining
+             *  the Swagger JSON with some local settings
+             * definition.operation = the Swagger JSON for this builder's
+             *  Operation (each builder handles just one Operation, but
+             *  the Swagger JSON may define many).
+             */
 
             function parseSwaggerData(data) {
                 var definition = {
@@ -683,9 +706,3 @@
             });
         });
 }));
-
-
-
-
-
-
