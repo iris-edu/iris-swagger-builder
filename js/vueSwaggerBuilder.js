@@ -323,7 +323,7 @@
      * Base mixin for a field, this provides standard operations
      */
     var baseFieldMixin = {
-        props: ['name', 'label'],
+        props: ['name', 'label', 'placeholder'],
         data: function () {
             return {
                 // Used for the DOM id
@@ -368,11 +368,17 @@
                 return this.toQueryValue(this.value);
             },
             // Placeholder text, if any
-            placeholder: function() {
-                if (this.definition.maximum) {
-                    return "" + this.definition.minimum + "-" + this.definition.maximum;
+            placeholderText: function() {
+                if (this.placeholder) {
+                    return this.placeholder;
                 }
-                return "pl";
+                if (this.definition.default != undefined) {
+                    return "" + this.definition.default;
+                }
+                if (this.definition.maximum) {
+                    return "" + this.definition.minimum + " - " + this.definition.maximum;
+                }
+                return "";
             }
         },
         methods: {
@@ -418,7 +424,7 @@
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
               <input :disabled="!checked" :id="randomId" v-model="value" \
-                class="form-control" :placeholder="placeholder"/> \
+                class="form-control" :placeholder="placeholderText"/> \
             </div> \
             ',
         mixins: [baseFieldMixin]
