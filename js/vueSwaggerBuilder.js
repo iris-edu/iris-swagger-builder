@@ -319,27 +319,31 @@
         return $div;
     };
 
-
-
-
-
+    /**
+     * Base mixin for a field, this provides standard operations
+     */
     var baseFieldMixin = {
         props: ['name', 'label'],
         data: function () {
             return {
+                // Used for the DOM id
                 randomId: 'input-' + Math.random()
             }
         },
         computed: {
+            // The definition of the parameter from Swagger
             definition: function() {
                 return this.$store.state.definition.operation.params[this.name];
             },
+            // Should this have a checkbox?
             checkbox: function() {
                 return !this.definition.required;
             },
+            // Text for the field label
             displayLabel: function() {
                 return (this.label || this.name);
             },
+            // Get/set the checkbox state
             checked: {
                 get: function() {
                     return (!this.checkbox || this.getState(this.name + "-check"));
@@ -349,36 +353,60 @@
                     this.updateQuery();
                 }
             },
+            // Get/set the field value
             value: {
                 get: function() {
-                    var value = this.getState(this.name);
-                    if (value === undefined) {
-                        value = "";
-                    }
-                    return value;
+                    return this.fromStateValue(this.getState(this.name));
                 },
                 set: function(v) {
-                    this.setState(this.name, v);
+                    this.setState(this.name, this.toStateValue(v));
                     this.updateQuery();
                 }
+            },
+            // Get the value as a query parameter
+            queryValue: function() {
+                return this.toQueryValue(this.value);
+            },
+            // Placeholder text, if any
+            placeholder: function() {
+                if (this.definition.maximum) {
+                    return "" + this.definition.minimum + "-" + this.definition.maximum;
+                }
+                return "pl";
             }
         },
         methods: {
+            /* These are for subclasses to replace */
+            fromStateValue(v) {
+                return v || "";
+            },
+            toStateValue(v) {
+                return v;
+            },
+            // Value as shown in the query
+            toQueryValue: function(v) {
+                return v;
+            },
+            /* These are basically class methods; usually,
+                k = this.name
+                but these allow the field to set or read things
+                outside its own setting (ie. some fields may depend on
+                or affect others (example?))
+             */
+            // Get any keyed value from the input state
             getState: function(k) {
                 return this.$store.state.input[k];
             },
+            // Set the current value for the indicated input
             setState: function(k, v) {
                 var update = {};
                 update[k] = v;
                 this.$store.commit('update', update);
             },
+            // Trigger an update to the full query URL
             updateQuery: function() {
                 var update = {};
-                if (this.checked) {
-                    update[this.name] = this.value;
-                } else {
-                    update[this.name] = "";
-                }
+                update[this.name] = this.checked ? this.queryValue : "";
                 this.$store.commit('updateQuery', update);
             }
         }
@@ -389,7 +417,8 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <input :disabled="!checked" :id="randomId" v-model="value" /> \
+              <input :disabled="!checked" :id="randomId" v-model="value" \
+                class="form-control" :placeholder="placeholder"/> \
             </div> \
             ',
         mixins: [baseFieldMixin]
@@ -400,10 +429,15 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <Flatpickr :disabled="!checked" :id="randomId" v-model="value" /> \
+              <Flatpickr :disabled="!checked" :id="randomId" v-model="value" class="form-control" /> \
             </div> \
             ',
-        mixins: [baseFieldMixin]
+        mixins: [baseFieldMixin],
+        computed: {
+            queryValue: function() {
+                return this.value.replace(' ', 'T');
+            }
+        }
     });
 
     Vue.component('choice-input', {
@@ -411,7 +445,9 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <select :disabled="!checked" :id="randomId" v-model="value"><option v-for="choice in choices">{{ choice }}</option></select> \
+              <select :disabled="!checked" :id="randomId" v-model="value" class="form-control"> \
+                <option v-for="choice in choices">{{ choice }}</option> \
+              </select> \
             </div> \
             ',
         mixins: [baseFieldMixin],
@@ -426,14 +462,18 @@
         template: '\
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
-              <input :id="randomId" v-model="value" type="checkbox" value="true" /> \
+              <input :id="randomId" v-model="value" type="checkbox" class="checkbox" value="true" /> \
             </div> \
             ',
         mixins: [baseFieldMixin],
         computed: {
+            // The input is itself a checkbox, so never show the wrapper checkbox
             checkbox: function() {
                 return false;
             },
+            queryValue: function() {
+                return this.value ? "true" : "";
+            }
         }
     });
 
@@ -496,6 +536,11 @@
     });
 
 
+    /* The default escape (from $.param) overescapes things, so undo some
+     */
+    function friendlyURL(url) {
+        return url.replace(/%3A/g, ':');
+    }
 
     /**
      * Default builder options
@@ -539,8 +584,10 @@
                 <div v-if="ready"> \
                     <h2>{{ serviceDefinition.title }}</h2> \
                     <p>{{ serviceDefinition.description }}</p> \
-                    <slot>fields</slot> \
-                    <div>{{ queryPath }}?{{ queryParams }}</div> \
+                    <form class="form-inline"> \
+                        <slot>fields</slot> \
+                    </form> \
+                    <div>{{ queryPath }}?{{ decodeURI(queryParams) }}</div> \
                 </div> \
                 <div v-else> \
                     <div v-if="error" class="error"> \
@@ -574,7 +621,7 @@
                 },
                 // List of query parameters
                 queryParams: function() {
-                    return $.param(this.$store.state.query || []);
+                    return friendlyURL($.param(this.$store.state.query || []));
                 },
                 // The current error message, if one exists
                 error: function() {
@@ -601,7 +648,7 @@
             },
             mutations: {
                 updateQuery: function(state, data) {
-                    // Called whenever something changes
+                    // Update the service query URL
                     var query = $.extend({}, state.query, data);
                     for (var k in query) {
                         if (query[k] === "") {
@@ -611,7 +658,7 @@
                     state.query = query;
                 },
                 update: function(state, data) {
-                    //
+                    // Update the state of the form inputs
                     state.input = $.extend({}, state.input, data);
                 },
                 load: function(state, definition) {

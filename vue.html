@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html>
-  <head>
+<head>
     <meta charset="UTF-8" />
     <title>Vue Builder</title>
     <script src="http://code.jquery.com/jquery-3.1.1.js"></script>
@@ -11,58 +11,64 @@
     <script src="calendar/flatpickr.js"></script>
     <script src="calendar/vue-flatpickr.js"></script>
     <script src="js/vueSwaggerBuilder.js"></script>
-    </script>
-    <link rel="stylesheet" href="calendar/flatpickr.css">
-    <link rel="stylesheet" href="css/builder.css">
-  </head>
-  <body>
+    <link rel="stylesheet" href="calendar/flatpickr.css" />
+    <link rel="stylesheet" href="css/iris.css" />
+    <link rel="stylesheet" href="css/builder.css" />
+</head>
+<body>
     Builder is here:
     <div style="border:1px solid #ddd">
-    <div id="builder">
-      <builder definition="example/swagger-event.json">
-          <date-input name="starttime"></date-input>
-          <date-input name="endtime"></date-input>
-          <text-input name="minmag"></text-input>
-          <text-input name="maxmag"></text-input>
-          <choice-input name="magtype"></choice-input>
-          <choice-input name="catalog"></choice-input>
-          <choice-input name="contributor"></choice-input>
-          <boolean-input name="includeallorigins"></boolean-input>
-          <boolean-input name="includeallmagnitudes"></boolean-input>
-          <boolean-input name="includearrivals"></boolean-input>
-          <text-input name="minlon"></text-input>
-          <text-input name="maxlon"></text-input>
-          <text-input name="minlat"></text-input>
-          <text-input name="maxlat"></text-input>
-          <text-input name="lat"></text-input>
-          <text-input name="lon"></text-input>
-          <text-input name="minradius"></text-input>
-          <text-input name="maxradius"></text-input>
-          <text-input name="mindepth"></text-input>
-          <text-input name="maxdepth"></text-input>
-          <choice-input name="orderby"></choice-input>
-          <choice-input name="format"></choice-input>
-          <text-input name="limit"></text-input>
-          <text-input name="offset"></text-input>
-          <text-input name="eventid"></text-input>
-          <date-input name="updatedafter"></date-input>
-
-        <fieldset>
-          <legend>Advanced search</legend>
-        </fieldset>
-
-      </builder>
-    </div>
-
-        <options>
-          <option label="All"></option>
-          <option label="Lat/Lon Box">
-            <coordinates nsew="maxlat minlat maxlon minlon"></coordinates>
-          </option>
-          <option label="Lat/Lon Radius">
-            <coordinates circle="lat lon maxradius"></coordinates>
-          </option>
-        </options>
-
-  </body>
-</html>
+        <div id="builder">
+            <builder definition="example/swagger-event.json">
+                <div class="row">
+                    <div class="col-xs-6">
+                        <date-input name="starttime" label="Start Time"></date-input>
+                        <date-input name="endtime"></date-input>
+                        <text-input name="minmag"></text-input>
+                        <text-input name="maxmag"></text-input>
+                        <choice-input name="magtype"></choice-input>
+                        <choice-input name="catalog"></choice-input>
+                        <choice-input name="contributor"></choice-input>
+                        <boolean-input name="includeallorigins"></boolean-input>
+                        <boolean-input name="includeallmagnitudes"></boolean-input>
+                        <boolean-input name="includearrivals"></boolean-input>
+                        <text-input name="mindepth"></text-input>
+                        <text-input name="maxdepth"></text-input>
+                        <choice-input name="orderby"></choice-input>
+                        <choice-input name="format"></choice-input>
+                        <text-input name="limit"></text-input>
+                        <text-input name="offset"></text-input>
+                        <text-input name="eventid"></text-input>
+                        <date-input name="updatedafter"></date-input>
+                    </div>
+                    <div class="col-xs-6">
+                        <fieldset>
+                            <legend>Lat/Lon Box</legend>
+                            <text-input name="minlon"></text-input>
+                            <text-input name="maxlon"></text-input>
+                            <text-input name="minlat"></text-input>
+                            <text-input name="maxlat"></text-input>
+                        </fieldset>
+                        <fieldset>
+                            <legend>Circular Selection</legend>
+                            <text-input name="lat"></text-input>
+                            <text-input name="lon"></text-input>
+                            <text-input name="minradius"></text-input>
+                            <text-input name="maxradius"></text-input>
+                        </fieldset>
+                    </div>
+                </builder>
+            </div>
+<!--
+            <options>
+                <option label="All"></option>
+                <option label="Lat/Lon Box">
+                    <coordinates nsew="maxlat minlat maxlon minlon"></coordinates>
+                </option>
+                <option label="Lat/Lon Radius">
+                    <coordinates circle="lat lon maxradius"></coordinates>
+                </option>
+            </options>
+-->
+        </body>
+        </html>

@@ -5,3 +5,26 @@
 .error {
   color: #c33;
 }
+
+input[type="checkbox"] {
+    margin: 0;
+    font-size: 1.5em;
+}
+
+label {
+    width: 8.5em;
+    text-align: right;
+}
+
+.form-group {
+    display: block !important;
+}
+
+fieldset {
+    margin-bottom: 2em;
+}
+
+legend {
+  font-size: 15px;
+  margin-bottom: 6px;
+}
