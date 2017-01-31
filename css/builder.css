@@ -28,3 +28,20 @@ legend {
   font-size: 15px;
   margin-bottom: 6px;
 }
+
+.query {
+    position: fixed;
+    bottom: 0;
+    z-index: 1;
+    background: #fff;
+    padding: 1em;
+    width: 80%;
+    margin: 2px 10%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+footer {
+    height: 12em;
+    background: #eee;
+}

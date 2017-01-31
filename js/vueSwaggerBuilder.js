@@ -245,7 +245,7 @@
         this.name = name;
         this.options = Array.prototype.slice.call(arguments, 1);
     }
-    irisUtil.Extend(OptGroup, Renderable);
+    // irisUtil.Extend(OptGroup, Renderable);
     OptGroup.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div>')
@@ -283,7 +283,7 @@
     function CoordinateBox() {
         this.nsewInputs = Array.prototype.slice.call(arguments, 0);
     }
-    irisUtil.Extend(CoordinateBox, Renderable);
+//    irisUtil.Extend(CoordinateBox, Renderable);
     CoordinateBox.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div class="coord_box">');
@@ -305,7 +305,7 @@
     function CoordinateRadius() {
         this.crInputs = Array.prototype.slice.call(arguments, 0);
     }
-    irisUtil.Extend(CoordinateRadius, Renderable);
+//    irisUtil.Extend(CoordinateRadius, Renderable);
     CoordinateRadius.prototype.render = function(builder) {
         var self = this;
         var $div = $('<div class="coord_radius">');
@@ -323,7 +323,7 @@
      * Base mixin for a field, this provides standard operations
      */
     var baseFieldMixin = {
-        props: ['name', 'label', 'placeholder'],
+        props: ['name', 'label', 'placeholder', 'default', 'required'],
         data: function () {
             return {
                 // Used for the DOM id
@@ -337,7 +337,8 @@
             },
             // Should this have a checkbox?
             checkbox: function() {
-                return !this.definition.required;
+                return (this.required == "false") ||
+                    (!this.required && !this.definition.required);
             },
             // Text for the field label
             displayLabel: function() {
@@ -354,13 +355,14 @@
                 }
             },
             // Get/set the field value
+            // Subclasses should override (get/set/from/to)StateValue to
+            // customize the details of how the value maps onto state
             value: {
                 get: function() {
-                    return this.fromStateValue(this.getState(this.name));
+                    return this.fromStateValue(this.getStateValue());
                 },
                 set: function(v) {
-                    this.setState(this.name, this.toStateValue(v));
-                    this.updateQuery();
+                    this.setStateValue(this.toStateValue(v));
                 }
             },
             // Get the value as a query parameter
@@ -379,20 +381,53 @@
                     return "" + this.definition.minimum + " - " + this.definition.maximum;
                 }
                 return "";
+            },
+            helpText: function() {
+                return this.definition.description || "";
             }
         },
         methods: {
-            /* These are for subclasses to replace */
-            fromStateValue(v) {
-                return v || "";
-            },
-            toStateValue(v) {
+            /* Simple translators for single values, usually this is what
+             * subclasses should override
+             */
+            fromStateValue: function(v) {
                 return v;
             },
-            // Value as shown in the query
+            toStateValue: function(v) {
+                return v;
+            },
+            // Translate a single value to a query parameter
             toQueryValue: function(v) {
                 return v;
             },
+
+            /* These implement a simple 1-1 mapping for state and query.
+             * eg. state[this.name] = this.value
+             */
+
+            /* Get the component value from the state */
+            getStateValue: function() {
+                var v = this.getState(this.name);
+                if (v === undefined) {
+                    v = this.default;
+                }
+                if (v === undefined) {
+                    v = "";
+                }
+                return this.fromStateValue(v);
+            },
+            /* Write the component value to the state */
+            setStateValue: function(v) {
+                this.setState(this.name, this.toStateValue(v));
+                this.updateQuery();
+            },
+            /* Produce a dictionary of query parameters */
+            getQuery: function() {
+                var query = {};
+                query[this.name] = this.checked ? this.toQueryValue(this.value) : "";
+                return query;
+            },
+
             /* These are basically class methods; usually,
                 k = this.name
                 but these allow the field to set or read things
@@ -411,9 +446,8 @@
             },
             // Trigger an update to the full query URL
             updateQuery: function() {
-                var update = {};
-                update[this.name] = this.checked ? this.queryValue : "";
-                this.$store.commit('updateQuery', update);
+                var query = this.getQuery();
+                this.$store.commit('updateQuery', query);
             }
         }
     };
@@ -425,6 +459,7 @@
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
               <input :disabled="!checked" :id="randomId" v-model="value" \
                 class="form-control" :placeholder="placeholderText"/> \
+              <div class="help" v-if="helpText">{{ helpText }}</div> \
             </div> \
             ',
         mixins: [baseFieldMixin]
@@ -439,9 +474,22 @@
             </div> \
             ',
         mixins: [baseFieldMixin],
-        computed: {
-            queryValue: function() {
-                return this.value.replace(' ', 'T');
+        methods: {
+            toQueryValue: function(v) {
+                return v.replace(' ', 'T');
+            },
+            // Placeholder text, if any
+            placeholderText: function() {
+                if (this.placeholder) {
+                    return this.placeholder;
+                }
+                if (this.definition.default != undefined) {
+                    return "" + this.definition.default;
+                }
+                if (this.definition.maximum) {
+                    return "" + this.definition.minimum + " - " + this.definition.maximum;
+                }
+                return "";
             }
         }
     });
@@ -460,7 +508,8 @@
         computed: {
             choices: function() {
                 return this.definition.enum;
-            }
+            },
+
         }
     });
 
@@ -545,8 +594,33 @@
     /* The default escape (from $.param) overescapes things, so undo some
      */
     function friendlyURL(url) {
+        // TODO: probably more substitutions should be here
         return url.replace(/%3A/g, ':');
     }
+
+    Vue.component('query-link', {
+        template: '\
+            <div class="query"> \
+                <a :href="url">{{ prettyURL }}</a> \
+            </div> \
+        ',
+        props: ['url'],
+        computed: {
+            prettyURL: function() {
+                return this.url.replace(/(\?|\&)/g, '$& ');
+            }
+        },
+        methods: {
+            affix: function() {
+                $('.query').affix({
+                  offset: {
+                    top: $('.query').offset().top,
+                    bottom: $('footer').outerHeight(true) + 40
+                  }
+                });
+            }
+        }
+    });
 
     /**
      * Default builder options
@@ -593,7 +667,7 @@
                     <form class="form-inline"> \
                         <slot>fields</slot> \
                     </form> \
-                    <div>{{ queryPath }}?{{ decodeURI(queryParams) }}</div> \
+                    <query-link :url="queryURL"></query-link> \
                 </div> \
                 <div v-else> \
                     <div v-if="error" class="error"> \
@@ -628,6 +702,10 @@
                 // List of query parameters
                 queryParams: function() {
                     return friendlyURL($.param(this.$store.state.query || []));
+                },
+                // Full query URL
+                queryURL: function() {
+                    return "" + this.queryPath + "?" + decodeURI(this.queryParams);
                 },
                 // The current error message, if one exists
                 error: function() {
@@ -732,18 +810,24 @@
             };
 
             /* Note that this is written for jQuery 3.0, which changed how Deferreds work */
+
+            // Load the Swagger definition
             return $.ajax(options.definition).then(
+                // OK, parse the definition
                 function(data) {
                     return parseSwaggerData(data);
                 },
+                // Error, consolidate into a single value
                 function(jqXHR, status, error) {
                     throw (error || status);
                 }
             ).then(
+                // Store the parsed definition
                 function(definition) {
                     irisUtil.Log.debug("Success");
                     store.commit('load', definition);
                 },
+                // Error
                 function(error) {
                     irisUtil.Log.error("Error: " + error);
                     store.commit('error', error);
