@@ -20,6 +20,16 @@ label {
     display: block !important;
 }
 
+.input-field {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.help {
+    color: #666;
+    font-size: 12px;
+}
+
 fieldset {
     margin-bottom: 2em;
 }

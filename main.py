@@ -9,7 +9,7 @@ Basic web server
 try:
     PORT = int(sys.argv[1])
 except:
-    PORT = 8000
+    PORT = 8010
 print "serving at port", PORT
 
 Handler = SimpleHTTPServer.SimpleHTTPRequestHandler
