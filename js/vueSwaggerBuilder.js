@@ -155,10 +155,8 @@
             <div class="form-group"> \
                 <label :for="uid">{{ label }}:</label> \
                 <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-                <div class="input-field"> \
-                    <slot>widget</slot> \
-                    <div class="help" v-if="helpText">{{ helpText }}</div> \
-                </div> \
+                <slot>widget</slot> \
+                <div class="help" v-if="helpText">{{ helpText }}</div> \
             </div> \
             ',
         computed: {
@@ -214,6 +212,7 @@
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input v-if="checkbox" v-model="checked" type="checkbox" /> \
               <Flatpickr :disabled="!checked" :id="randomId" v-model="value" class="form-control" /> \
+              <div class="help" v-if="helpText">{{ helpText }}</div> \
             </div> \
             ',
         mixins: [baseFieldMixin],
@@ -245,6 +244,7 @@
               <select :disabled="!checked" :id="randomId" v-model="value" class="form-control"> \
                 <option v-for="choice in choices">{{ choice }}</option> \
               </select> \
+              <div class="help" v-if="helpText">{{ helpText }}</div> \
             </div> \
             ',
         mixins: [baseFieldMixin],
@@ -261,6 +261,7 @@
             <div class="form-group"> \
               <label :for="randomId">{{ displayLabel }}:</label> \
               <input :id="randomId" v-model="value" type="checkbox" class="checkbox" value="true" /> \
+              <div class="help help-inline" v-if="helpText">{{ helpText }}</div> \
             </div> \
             ',
         mixins: [baseFieldMixin],

@@ -18,6 +18,7 @@ label {
 
 .form-group {
     display: block !important;
+    margin-bottom: 5px !important;
 }
 
 .input-field {
@@ -26,8 +27,18 @@ label {
 }
 
 .help {
-    color: #666;
-    font-size: 12px;
+    color: #777;
+    font-size: 13px;
+    line-height: 1;
+    margin-left: 11em;
+    margin-top: 2px;
+}
+
+.help.help-inline {
+    display: inline-block;
+    max-width: 70%;
+    margin-left: 0;
+    vertical-align: middle;
 }
 
 fieldset {
