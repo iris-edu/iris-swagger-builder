@@ -23,7 +23,7 @@
         data: function () {
             return {
                 // Used for the DOM id
-                randomId: 'input-' + Math.random()
+                uid: 'input-' + Math.random()
             };
         },
         computed: {
@@ -49,6 +49,10 @@
                     this.setState(this.name + "-check", v);
                     this.updateQuery();
                 }
+            },
+            // Is the field enabled?
+            enabled: function() {
+                return this.checked;
             },
             // Get/set the field value
             // Subclasses should override (get/set/from/to)StateValue to
@@ -160,9 +164,7 @@
             </div> \
             ',
         computed: {
-            // Get/set the field value
-            // Subclasses should override (get/set/from/to)StateValue to
-            // customize the details of how the value maps onto state
+            // Get/set the checkbox state
             checked: {
                 get: function() {
                     return this.value;
@@ -170,23 +172,38 @@
                 set: function(v) {
                     this.$emit('input', v);
                 }
-            },
+            }
         }
     });
-
+    
+    /*
     Vue.component('text-widget', {
-        props: ['checked', 'randomId', 'value', 'placeholderText'],
+        props: ['enabled', 'uid', 'value', 'placeholderText'],
         template: '\
-          <input :disabled="!checked" :id="randomId" v-model="value" \
+          <input :disabled="!enabled" :id="uid" v-model="inputValue" \
             class="form-control" :placeholder="placeholderText"/> \
-        '
+        ',
+        computed: {
+            inputValue: {
+                get: function() {
+                    return this.value;
+                },
+                set: function(v) {
+                    this.$emit('input', v);
+                    this.setStateValue(this.toStateValue(v));
+                }
+            }
+        }
     });
+    */
 
     Vue.component('test-input', {
         template: '\
-            <input-wrapper :label="displayLabel" :checkbox="checkbox" v-model="checked" :helpText="helpText"> \
-              <input :disabled="!checked" :id="randomId" v-model="value" \
-                class="form-control" :placeholder="placeholderText"/> \
+            <input-wrapper :label="displayLabel" :checkbox="checkbox" :uid="uid" v-model="checked" :helpText="helpText"> \
+              <input type="text" \
+                class="form-control" :id="uid" \
+                :disabled="!checked" v-model="value" \
+                :placeholderText="placeholderText" />\
             </input-wrapper> \
             ',
         mixins: [baseFieldMixin]
@@ -195,57 +212,37 @@
 
     Vue.component('text-input', {
         template: '\
-            <div class="form-group"> \
-              <label :for="randomId">{{ displayLabel }}:</label> \
-              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <input :disabled="!checked" :id="randomId" v-model="value" \
-                class="form-control" :placeholder="placeholderText"/> \
-              <div class="help" v-if="helpText">{{ helpText }}</div> \
-            </div> \
+            <input-wrapper :label="displayLabel" :checkbox="checkbox" :uid="uid" v-model="checked" :helpText="helpText"> \
+                <input type="text" \
+                    class="form-control" :id="uid" \
+                    :disabled="!checked" v-model="value" \
+                    :placeholderText="placeholderText" />\
+            </input-wrapper> \
             ',
         mixins: [baseFieldMixin]
     });
 
     Vue.component('date-input', {
         template: '\
-            <div class="form-group"> \
-              <label :for="randomId">{{ displayLabel }}:</label> \
-              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <Flatpickr :disabled="!checked" :id="randomId" v-model="value" class="form-control" /> \
-              <div class="help" v-if="helpText">{{ helpText }}</div> \
-            </div> \
+            <input-wrapper :label="displayLabel" :checkbox="checkbox" :uid="uid" v-model="checked" :helpText="helpText"> \
+                <Flatpickr :disabled="!checked" :id="uid" v-model="value" class="form-control" /> \
+            </input-wrapper> \
             ',
         mixins: [baseFieldMixin],
         methods: {
             toQueryValue: function(v) {
                 return v.replace(' ', 'T');
-            },
-            // Placeholder text, if any
-            placeholderText: function() {
-                if (this.placeholder) {
-                    return this.placeholder;
-                }
-                if (this.definition.default !== undefined) {
-                    return "" + this.definition.default;
-                }
-                if (this.definition.maximum) {
-                    return "" + this.definition.minimum + " - " + this.definition.maximum;
-                }
-                return "";
             }
         }
     });
 
     Vue.component('choice-input', {
         template: '\
-            <div class="form-group"> \
-              <label :for="randomId">{{ displayLabel }}:</label> \
-              <input v-if="checkbox" v-model="checked" type="checkbox" /> \
-              <select :disabled="!checked" :id="randomId" v-model="value" class="form-control"> \
+            <input-wrapper :label="displayLabel" :checkbox="checkbox" :uid="uid" v-model="checked" :helpText="helpText"> \
+              <select :disabled="!checked" :id="uid" v-model="value" class="form-control"> \
                 <option v-for="choice in choices">{{ choice }}</option> \
               </select> \
-              <div class="help" v-if="helpText">{{ helpText }}</div> \
-            </div> \
+            </input-wrapper> \
             ',
         mixins: [baseFieldMixin],
         computed: {
@@ -258,20 +255,20 @@
 
     Vue.component('boolean-input', {
         template: '\
-            <div class="form-group"> \
-              <label :for="randomId">{{ displayLabel }}:</label> \
-              <input :id="randomId" v-model="value" type="checkbox" class="checkbox" value="true" /> \
-              <div class="help help-inline" v-if="helpText">{{ helpText }}</div> \
-            </div> \
+            <input-wrapper :label="displayLabel" :uid="uid" :helpText="helpText"> \
+              <input :id="uid" v-model="value" type="checkbox" class="checkbox" value="true" /> \
+            </input-wrapper> \
             ',
         mixins: [baseFieldMixin],
         computed: {
             // The input is itself a checkbox, so never show the wrapper checkbox
             checkbox: function() {
                 return false;
-            },
-            queryValue: function() {
-                return this.value ? "true" : "";
+            }
+        },
+        methods: {
+            toQueryValue: function(v) {
+                return v ? "true" : "";
             }
         }
     });
@@ -305,7 +302,7 @@
             var input = h('input', {
                 attrs: {
                     type: 'text',
-                    id: self.randomId
+                    id: self.uid
                 },
                 domProps: {
                     value: self.value
@@ -321,7 +318,7 @@
             }, [
                 h('label', {
                     attrs: {
-                        'for': self.randomId
+                        'for': self.uid
                     }
                 }, [
                         self.displayLabel
@@ -333,6 +330,83 @@
         },
         mixins: [baseFieldMixin]
     });
+
+    Vue.component('radio-group', {
+        props: ['label'],
+        template: '\
+            <div class="option"> \
+                <label><input type="radio" :name="radioName" v-model="checked" value="true" /> {{ label }}</label> \
+                <slot>inputs</slot> \
+            </div> \
+            ',
+        data: function() {
+            return {
+                checked: false,
+                radioName: this.$parent.radioName
+            };
+        },
+        computed: {
+        },
+        methods: {
+            getQuery: function() {
+                var query = {};
+                if (this.checked) {
+                    this.$children.forEach(function(child) {
+                        $.extend(query, child.getQuery());
+                    });
+                }
+                return query;
+            },
+        }
+    });
+
+    Vue.component('radio-groups', {
+        template: '\
+            <div class="options"> \
+                <slot>options</slot> \
+            </div> \
+            ',
+        data: function () {
+            return {
+                radioName: 'radio-' + Math.random()
+            };
+        },
+        computed: {
+        },
+        methods: {
+            getQuery: function() {
+                var query = {};
+                this.$children.forEach(function(child) {
+                    $.extend(query, child.getQuery());
+                });
+                return query;
+            }
+        },
+        mounted: function() {
+            var radioName = this.radioName;
+            this.$children.forEach( function(child) {
+                child.radioName = radioName;
+            });
+        }
+    });
+
+    Vue.component('default-form', {
+        props: ['definition'],
+        template: '\
+            <div> \
+                {{ form }} \
+            </div> \
+        ',
+        computed: {
+            form: function() {
+                var params = this.definition.params;
+                return $.map(this.definition.parameterNames, function(p) {
+                    return '<text-input name="' + p + '"></text-input>';
+                }).join("\n");
+            }
+        }
+    });
+
 
 
     /* The default escape (from $.param) overescapes things, so undo some
@@ -409,7 +483,7 @@
                     <h2>{{ serviceDefinition.title }}</h2> \
                     <p>{{ serviceDefinition.description }}</p> \
                     <form class="form-inline"> \
-                        <slot>fields</slot> \
+                        <slot><default-form :definition="operationDefinition"></default-form></slot> \
                     </form> \
                     <query-link :url="queryURL"></query-link> \
                 </div> \

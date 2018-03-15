@@ -28,7 +28,7 @@
                     <div class="col-xs-6">
                         <date-input name="starttime" label="Start Time"></date-input>
                         <date-input name="endtime"></date-input>
-                        <test-input name="minmag"></test-input>
+                        <test-input name="minmag" label="Min Magnitude"></test-input>
                         <text-input name="maxmag"></text-input>
                         <choice-input name="magtype"></choice-input>
                         <choice-input name="catalog"></choice-input>
@@ -46,41 +46,26 @@
                         <date-input name="updatedafter"></date-input>
                     </div>
                     <div class="col-xs-6">
-
-                        <fieldset>
-                            <legend>Lat/Lon Box</legend>
-                            <text-input name="minlon"></text-input>
-                            <text-input name="maxlon"></text-input>
-                            <text-input name="minlat"></text-input>
-                            <text-input name="maxlat"></text-input>
-                        </fieldset>
-                        <fieldset>
-                            <legend>Circular Selection</legend>
-                            <text-input name="lat"></text-input>
-                            <text-input name="lon"></text-input>
-                            <text-input name="minradius"></text-input>
-                            <text-input name="maxradius"></text-input>
-                        </fieldset>
+                        <radio-groups>
+                            <radio-group label="All"></radio-group>
+                            <radio-group label="Lat/Lon Box">
+                                <text-input name="minlon"></text-input>
+                                <text-input name="maxlon"></text-input>
+                                <text-input name="minlat"></text-input>
+                                <text-input name="maxlat"></text-input>
+                            </radio-group>
+                            <radio-group label="Lat/Lon Radius">
+                                <text-input name="lat"></text-input>
+                                <text-input name="lon"></text-input>
+                                <text-input name="minradius"></text-input>
+                                <text-input name="maxradius"></text-input>
+                            </radio-group>
+                        </radio-groups>
                     </div>
                 </div>
             </builder>
         </div>
-<!--
-            TODO: Make this work in Vue
-            <options>
-                <option label="All"></option>
-                <option label="Lat/Lon Box">
-                    <text-input name="minlon"></text-input>
-                    <text-input name="maxlon"></text-input>
-                    <text-input name="minlat"></text-input>
-                    <text-input name="maxlat"></text-input>
-                    <coordinates nsew="maxlat minlat maxlon minlon"></coordinates>
-                </option>
-                <option label="Lat/Lon Radius">
-                    <coordinates circle="lat lon maxradius"></coordinates>
-                </option>
-            </options>
--->
+
         <footer style="height:80px;background:#ccc;"></footer>
 
       </div>
